@@ -1,0 +1,85 @@
+/*
+  Estilos globales (design tokens + resets básicos)
+  - Variables: para mantener una estética consistente sin repetir colores.
+  - Clases utilitarias: botones y texto.
+*/
+
+:root {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
+
+  /* Paleta inspirada en la plantilla (verde + grises). */
+  --brand: #16a34a;
+  --brandDark: #15803d;
+  --text: #111827;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --surface: #ffffff;
+  --surfaceHover: #f3f4f6;
+
+  color: var(--text);
+  background: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Botones reutilizables (sin dependencia de librerías UI) */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 700;
+  line-height: 1;
+
+  cursor: pointer;
+  user-select: none;
+}
+
+.btn:hover {
+  background: var(--surfaceHover);
+}
+
+.btnPrimary {
+  background: var(--brand);
+  border-color: var(--brandDark);
+  color: #ffffff;
+}
+
+.btnPrimary:hover {
+  background: var(--brandDark);
+}
+
+.btnGhost {
+  background: rgba(22, 163, 74, 0.10);
+  border-color: rgba(22, 163, 74, 0.22);
+}
+
+.btnGhost:hover {
+  background: rgba(22, 163, 74, 0.16);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}

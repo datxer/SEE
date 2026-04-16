@@ -1,0 +1,45 @@
+<svg width="880" height="520" viewBox="0 0 880 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#dff4ff"/>
+      <stop offset="1" stop-color="#ffffff"/>
+    </linearGradient>
+    <linearGradient id="grass" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#b7f7c7"/>
+      <stop offset="1" stop-color="#5bd28a"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b4a86"/>
+      <stop offset="1" stop-color="#0b2a4a"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Simple, copyright-free illustration used as a placeholder "hero image" -->
+  <rect x="0" y="0" width="880" height="520" fill="url(#sky)"/>
+  <path d="M0 380C120 340 240 420 360 390C480 360 600 420 720 390C800 370 840 350 880 340V520H0V380Z" fill="url(#grass)" opacity="0.9"/>
+
+  <!-- Solar panel group -->
+  <g transform="translate(90 170) skewX(-14)">
+    <rect x="0" y="0" width="420" height="220" rx="10" fill="url(#panel)"/>
+    <rect x="14" y="14" width="392" height="192" rx="8" stroke="#5fb2ff" stroke-opacity="0.55" stroke-width="2"/>
+
+    <!-- Grid lines -->
+    <g stroke="#8dd0ff" stroke-opacity="0.25" stroke-width="2">
+      <line x1="70" y1="14" x2="70" y2="206"/>
+      <line x1="140" y1="14" x2="140" y2="206"/>
+      <line x1="210" y1="14" x2="210" y2="206"/>
+      <line x1="280" y1="14" x2="280" y2="206"/>
+      <line x1="350" y1="14" x2="350" y2="206"/>
+      <line x1="14" y1="62" x2="406" y2="62"/>
+      <line x1="14" y1="110" x2="406" y2="110"/>
+      <line x1="14" y1="158" x2="406" y2="158"/>
+    </g>
+  </g>
+
+  <!-- Support legs -->
+  <g stroke="#2d3a3f" stroke-width="10" stroke-linecap="round">
+    <line x1="200" y1="402" x2="250" y2="340"/>
+    <line x1="350" y1="410" x2="410" y2="330"/>
+    <line x1="110" y1="396" x2="150" y2="345"/>
+  </g>
+</svg>
