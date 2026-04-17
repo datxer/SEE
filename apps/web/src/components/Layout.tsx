@@ -1,5 +1,18 @@
+import { useEffect, useState } from 'react'
 import { Link, Outlet } from 'react-router-dom'
 import './Layout.css'
+
+type Theme = 'light' | 'dark'
+
+const THEME_STORAGE_KEY = 'see:theme'
+
+function getInitialTheme(): Theme {
+  const saved = localStorage.getItem(THEME_STORAGE_KEY)
+  if (saved === 'light' || saved === 'dark') return saved
+
+  const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)')?.matches
+  return prefersDark ? 'dark' : 'light'
+}
 
 export default function Layout() {
   /*
@@ -10,14 +23,30 @@ export default function Layout() {
     Mantener esto separado ayuda a una arquitectura limpia:
     las páginas no se preocupan por el header.
   */
+  const [theme, setTheme] = useState<Theme>(() => getInitialTheme())
+  const [logoFailed, setLogoFailed] = useState(false)
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme
+    localStorage.setItem(THEME_STORAGE_KEY, theme)
+  }, [theme])
+
+  const nextThemeLabel = theme === 'dark' ? 'Modo día' : 'Modo noche'
+  const logoSrc = logoFailed ? '/logo.svg' : '/logo.jpg'
+
   return (
-    <div>
+    <div className="layout">
       <header className="siteHeader">
         <div className="headerInner">
           {/* Marca: en la plantilla hay un logo + nombre. Aquí usamos un "mark" simple (sin assets externos). */}
           <Link to="/" className="brand" aria-label="Ir al inicio">
-            <span className="brandMark" aria-hidden="true" />
-            <span>Energia Solar</span>
+            <img
+              className="brandLogo"
+              src={logoSrc}
+              alt="Soluciones Energéticamente Eficientes"
+              onError={() => setLogoFailed(true)}
+            />
+            <span className="brandName">Soluciones Energéticamente Eficientes</span>
           </Link>
 
           {/* Navegación principal (rutas) */}
@@ -27,12 +56,16 @@ export default function Layout() {
             <Link to="/nosotros">Nosotros</Link>
             <Link to="/proyectos">Proyectos</Link>
 
-            {/* CTA en la barra como en la plantilla */}
-            <span className="navCta">
-              <Link to="/contacto" className="btn btnPrimary">
-                Contacto
-              </Link>
-            </span>
+            <button
+              type="button"
+              className="btn btnGhost btnSmall themeToggle"
+              onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
+              aria-label={nextThemeLabel}
+              aria-pressed={theme === 'dark'}
+              title={nextThemeLabel}
+            >
+              {nextThemeLabel}
+            </button>
           </nav>
         </div>
       </header>
@@ -40,6 +73,24 @@ export default function Layout() {
       <main className="main">
         <Outlet />
       </main>
+
+      <footer className="siteFooter" aria-label="Pie de página">
+        <div className="footerInner">
+          <section id="contacto" className="contactBox" aria-label="Contacto">
+            <h2 className="contactBoxTitle">Contacto</h2>
+            <div className="contactItems">
+              <div className="muted">Email: contacto@tudominio.com</div>
+              <div className="muted">Teléfono: +00 000 000 000</div>
+              <div className="muted">Ubicación: (tu ciudad)</div>
+            </div>
+          </section>
+
+          <div className="footerNote">
+            <span>Soluciones Energéticamente Eficientes</span>
+            <span>© {new Date().getFullYear()}</span>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }

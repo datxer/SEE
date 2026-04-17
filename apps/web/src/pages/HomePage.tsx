@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import heroIllustration from '../assets/hero-solar.svg'
 import './HomePage.css'
 
 function IconWrench() {
@@ -106,7 +105,7 @@ export default function HomePage() {
         <div className="heroInner">
           <div className="heroMedia">
             {/* Imagen local (placeholder libre) para que no dependas de links externos */}
-            <img src={heroIllustration} alt="Ilustración de paneles solares" />
+            <img src="/photo_2026-04-17_13-55-45.jpg" alt="Ilustración de paneles solares" />
           </div>
 
           <div className="heroContent">
@@ -119,9 +118,9 @@ export default function HomePage() {
 
             <div className="heroActions">
               {/* CTA principal -> contacto (lead) */}
-              <Link to="/contacto" className="btn btnPrimary">
+              <a href="#contacto" className="btn btnPrimary">
                 Solicitar Asesoría
-              </Link>
+              </a>
 
               {/* CTA secundaria -> servicios */}
               <Link to="/servicios" className="btn btnGhost">

@@ -10,14 +10,39 @@
   /* Paleta inspirada en la plantilla (verde + grises). */
   --brand: #16a34a;
   --brandDark: #15803d;
-  --text: #111827;
-  --muted: #6b7280;
-  --border: #e5e7eb;
-  --surface: #ffffff;
-  --surfaceHover: #f3f4f6;
+  --text: #0f172a;
+  --muted: rgba(15, 23, 42, 0.66);
+
+  /* Fondo azul grisáceo (más sobrio). */
+  --bg: #e6edf3;
+  --surface: rgba(255, 255, 255, 0.86);
+  --surfaceSolid: #ffffff;
+  --surfaceHover: rgba(255, 255, 255, 0.94);
+  --border: rgba(15, 23, 42, 0.12);
+  --headerBg: rgba(230, 237, 243, 0.78);
+  --shadow: 0 14px 40px rgba(15, 23, 42, 0.06);
 
   color: var(--text);
-  background: #ffffff;
+  background: var(--bg);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+:root[data-theme="dark"] {
+  --text: rgba(248, 250, 252, 0.92);
+  --muted: rgba(226, 232, 240, 0.66);
+
+  --bg: #0b1220;
+  --surface: rgba(15, 23, 42, 0.72);
+  --surfaceSolid: #0f172a;
+  --surfaceHover: rgba(15, 23, 42, 0.84);
+  --border: rgba(226, 232, 240, 0.14);
+  --headerBg: rgba(11, 18, 32, 0.70);
+  --shadow: 0 16px 46px rgba(0, 0, 0, 0.38);
 }
 
 * {
@@ -26,6 +51,8 @@
 
 body {
   margin: 0;
+  background: var(--bg);
+  color: var(--text);
 }
 
 a {
@@ -41,7 +68,7 @@ a {
   gap: 8px;
 
   padding: 10px 14px;
-  border-radius: 12px;
+  border-radius: 14px;
   border: 1px solid var(--border);
 
   background: var(--surface);
@@ -49,12 +76,27 @@ a {
   font-weight: 700;
   line-height: 1;
 
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.06);
+
   cursor: pointer;
   user-select: none;
 }
 
 .btn:hover {
   background: var(--surfaceHover);
+}
+
+.btn:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(22, 163, 74, 0.25),
+    0 10px 26px rgba(15, 23, 42, 0.08);
+}
+
+.btnSmall {
+  padding: 9px 12px;
+  border-radius: 12px;
+  font-weight: 800;
 }
 
 .btnPrimary {
@@ -68,8 +110,8 @@ a {
 }
 
 .btnGhost {
-  background: rgba(22, 163, 74, 0.10);
-  border-color: rgba(22, 163, 74, 0.22);
+  background: rgba(22, 163, 74, 0.08);
+  border-color: rgba(22, 163, 74, 0.20);
 }
 
 .btnGhost:hover {
