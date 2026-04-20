@@ -26,8 +26,9 @@ export default function AboutPage() {
 
         <h1 className="display-6 fw-bold mt-3 mb-2">Nosotros</h1>
         <p className="text-body-secondary mb-0" style={{ maxWidth: 820 }}>
-          Soluciones Energéticamente Eficientes (SEE) nace para llevar energía solar a hogares y empresas con una
-          implementación profesional, segura y con acompañamiento real.
+          Soluciones Energéticamente Eficientes (SEE) es una mediana empresa que ofrece servicios especializados en
+          soluciones sostenibles y sustentables. Nos enfocamos en ingeniería, elaboración de proyectos técnicos y
+          ejecutivos, asistencia técnica y consultoría en eficiencia energética y energías renovables.
         </p>
 
         {/*
@@ -38,24 +39,24 @@ export default function AboutPage() {
           <div className="col-12 col-md-4">
             <div className="card h-100 shadow-sm">
               <div className="card-body text-center">
-                <div className="fw-bold">10+ años</div>
-                <div className="text-body-secondary small mt-1">Experiencia acumulada</div>
+                <div className="fw-bold">2400 kWp</div>
+                <div className="text-body-secondary small mt-1">FV instalados</div>
               </div>
             </div>
           </div>
           <div className="col-12 col-md-4">
             <div className="card h-100 shadow-sm">
               <div className="card-body text-center">
-                <div className="fw-bold">Instalación segura</div>
-                <div className="text-body-secondary small mt-1">Normas y buenas prácticas</div>
+                <div className="fw-bold">298</div>
+                <div className="text-body-secondary small mt-1">Revisiones energéticas</div>
               </div>
             </div>
           </div>
           <div className="col-12 col-md-4">
             <div className="card h-100 shadow-sm">
               <div className="card-body text-center">
-                <div className="fw-bold">Soporte cercano</div>
-                <div className="text-body-secondary small mt-1">Antes, durante y después</div>
+                <div className="fw-bold">3.7 GWh/año</div>
+                <div className="text-body-secondary small mt-1">Ahorro estimado</div>
               </div>
             </div>
           </div>
@@ -63,16 +64,16 @@ export default function AboutPage() {
       </header>
 
       <section aria-label="Misión, visión y valores" data-reveal>
-        <h2 className="h3 mb-3">Nuestra forma de trabajar</h2>
+        <h2 className="h3 mb-3">¿Dónde vamos?</h2>
 
         <div className="row g-3">
           <div className="col-12 col-md-4">
             <article className="card h-100 shadow-sm">
               <div className="card-body">
-                <h3 className="h6">Misión</h3>
+                <h3 className="h6">Qué hacemos</h3>
                 <p className="text-body-secondary mb-0">
-                  Diseñar e instalar soluciones solares que reduzcan el costo energético y aumenten la independencia
-                  eléctrica de nuestros clientes.
+                  Integramos tecnologías y servicios para mejorar el rendimiento operativo, reducir costos y promover un
+                  uso responsable de los recursos.
                 </p>
               </div>
             </article>
@@ -83,8 +84,8 @@ export default function AboutPage() {
               <div className="card-body">
                 <h3 className="h6">Visión</h3>
                 <p className="text-body-secondary mb-0">
-                  Ser un referente local en energía renovable con proyectos confiables, medibles y sostenibles en el
-                  tiempo.
+                  Aspiramos a ser el referente corporativo en Cuba para servicios energéticos de ingeniería, proyectos
+                  técnicos y ejecutivos, asistencia técnica y consultoría en eficiencia energética y energías renovables.
                 </p>
               </div>
             </article>
@@ -93,25 +94,37 @@ export default function AboutPage() {
           <div className="col-12 col-md-4">
             <article className="card h-100 shadow-sm">
               <div className="card-body">
-                <h3 className="h6">Valores</h3>
-                <p className="text-body-secondary">Calidad, transparencia, seguridad y acompañamiento.</p>
+                <h3 className="h6">Compromiso</h3>
+                <p className="text-body-secondary">
+                  Cultura orientada al cliente, innovación, respeto al medio ambiente y un sistema de gestión de calidad.
+                </p>
                 <div className="d-flex flex-wrap gap-2" aria-label="Valores clave">
                   <span className="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle">
-                    Transparencia
+                    Cliente
+                  </span>
+                  <span className="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle">
+                    Innovación
+                  </span>
+                  <span className="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle">
+                    Medio ambiente
                   </span>
                   <span className="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle">
                     Calidad
-                  </span>
-                  <span className="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle">
-                    Seguridad
-                  </span>
-                  <span className="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle">
-                    Sostenibilidad
                   </span>
                 </div>
               </div>
             </article>
           </div>
+        </div>
+      </section>
+
+      <section aria-label="Calidad y certificación" data-reveal>
+        <div className="p-4 p-lg-5 rounded-4 border bg-body-tertiary">
+          <h2 className="h4 m-0">Calidad, seguridad y estándares</h2>
+          <p className="text-body-secondary mt-2 mb-0" style={{ maxWidth: 920 }}>
+            Trabajamos con componentes de marcas reconocidas, altos estándares de seguridad y sistemas adaptables
+            (conectados a red, aislados o con almacenamiento). SEE es proveedor registrado de Naciones Unidas.
+          </p>
         </div>
       </section>
 

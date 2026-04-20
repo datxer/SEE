@@ -8,27 +8,39 @@ type HeroSlide = {
 }
 
 /*
-  Slides del hero (la “caja de la foto”).
+  HERO (slider con transiciones)
 
-  - Por ahora dejo assets que YA existen en /public para que el slider funcione hoy mismo.
-  - Cuando me pases tus fotos/promos, solo cambia esta lista por tus archivos
-    (por ejemplo: '/promo-01.jpg', '/promo-02.jpg', etc.).
+  Aclaración (lo que se cambió respecto a antes):
+  - Se ELIMINÓ la dependencia de la “presentación” en PDF/PNG numerados.
+  - Se MANTIENE el efecto de transición (fade) y los botones de navegación.
+  - Las imágenes ahora se agregan manualmente en la lista `HERO_SLIDES`.
 
-  Nota: El build de Vite sirve /public en la raíz, por eso los paths empiezan con '/'.
+  Cómo usarlo (manual):
+  1) Copia tus imágenes a `apps/web/public/`
+  2) Agrega aquí las rutas, por ejemplo:
+     { src: '/promo-01.jpg', alt: 'Promo 1' }
+     { src: '/promo-02.jpg', alt: 'Promo 2' }
+
+  Nota (Vite): lo que está en /public se sirve desde la raíz: `/<archivo>`.
 */
 const HERO_SLIDES: HeroSlide[] = [
   {
-    src: '/photo_2026-04-17_13-55-45.jpg',
-    alt: 'Instalación de paneles solares',
+    /*
+      Home: imágenes manuales en /public
+
+      Importante:
+      - Aquí SOLO referenciamos imágenes (png/jpg/webp). Los PDFs NO se usan en el slider.
+      - Los botones del slider solo aparecen al pasar el mouse por encima (hover)
+        y al enfocar/tocar (para que sea usable sin mouse).
+    */
+    src: '/home_1.png',
+    alt: 'Home — imagen 1',
   },
   {
-    src: '/logo.jpg',
-    alt: 'Logo de la empresa',
-  },
-  {
-    src: '/logo.svg',
-    alt: 'Logo alternativo de la empresa',
-  },
+    src: '/home_2.png',
+    alt: 'Home — imagen 2',
+  }
+  // Agrega más slides aquí…
 ]
 
 function IconWrench() {
@@ -130,12 +142,11 @@ export default function HomePage() {
 
   /*
     Slideshow del HERO
+    - Fade controlado por CSS (opacity + transition).
     - Rotación automática cada X segundos.
-    - Transición “fade” controlada por CSS (opacity + transition).
     - Si una imagen falla (archivo no existe), la marcamos como fallida y se omite.
-      Esto ayuda cuando luego cambies los nombres de archivos y te equivoques en alguno.
+      Esto te ayuda cuando estés cargando imágenes manualmente y te equivoques en el nombre.
   */
-
   const [failedSlideSrcs, setFailedSlideSrcs] = useState<Record<string, true>>({})
 
   const availableSlides = useMemo(() => {
@@ -144,8 +155,7 @@ export default function HomePage() {
 
   const [activeSlideIndex, setActiveSlideIndex] = useState(0)
 
-  // Bandera temporal para disparar una animación CSS al cambiar de slide.
-  // La idea es que el cambio se sienta “en conjunto” (imagen + caja de texto al lado).
+  // Bandera para animar también el copy cuando cambia la imagen.
   const [isHeroSwapping, setIsHeroSwapping] = useState(false)
 
   const goToPrevSlide = () => {
@@ -204,9 +214,9 @@ export default function HomePage() {
               - Renderizamos todas las imágenes “apiladas” y con CSS hacemos el fade.
               - `alt` solo en la slide activa para que lectores de pantalla no “lean” todas.
             */}
-            <div className="heroSlider" aria-label="Galería de fotos y promociones">
+            <div className="heroSlider" aria-label="Galería de fotos y promociones" role="region">
               {availableSlides.length === 0 ? (
-                // Fallback súper simple si todas las imágenes fallaron.
+                // Fallback simple si no hay slides (o todas fallaron).
                 <div className="heroSliderFallback" aria-label="Sin imágenes disponibles" />
               ) : (
                 availableSlides.map((slide, index) => (
@@ -230,7 +240,7 @@ export default function HomePage() {
               {/*
                 Controles manuales del slider.
                 - Botones semi transparentes encima de la imagen.
-                - En el medio (verticalmente) de la caja.
+                - Se muestran al pasar el mouse por encima (hover) o con foco (teclado).
               */}
               {availableSlides.length > 1 ? (
                 <>
@@ -261,17 +271,19 @@ export default function HomePage() {
             <div className="p-4 p-lg-5">
               <div className="d-inline-flex align-items-center gap-2 badgeRow" aria-label="Etiquetas">
                 <span className="badge bg-success-subtle text-success-emphasis border border-success-subtle">
-                  Energía solar
+                  Ingeniería
                 </span>
-                <span className="badge text-bg-secondary">Residencial</span>
-                <span className="badge text-bg-secondary">Comercial</span>
+                <span className="badge text-bg-secondary">Eficiencia energética</span>
+                <span className="badge text-bg-secondary">Energías renovables</span>
               </div>
 
               <h1 className="heroTitle display-5 fw-bold mt-3 mb-2">
-                Energía <span className="text-success">Solar</span> para un Futuro <span className="text-success">Sostenible</span>
+                Soluciones <span className="text-success">Sostenibles</span> y <span className="text-success">Eficientes</span>
               </h1>
               <p className="heroSubtitle text-body-secondary mb-4">
-                Ahorra energía y cuida el planeta con soluciones solares pensadas para hogares y empresas.
+                Soluciones Energéticamente Eficientes (SEE) ofrece servicios especializados en ingeniería, elaboración de
+                proyectos técnicos y ejecutivos, asistencia técnica y consultoría en eficiencia energética y energías
+                renovables.
               </p>
 
               <div className="d-flex gap-2 flex-wrap">
@@ -293,20 +305,20 @@ export default function HomePage() {
               <div className="heroStats row g-2 mt-4" aria-label="Indicadores">
                 <div className="col-12 col-sm-4">
                   <div className="statBox">
-                    <div className="statValue">Ahorro</div>
-                    <div className="statLabel">Reduce tu factura</div>
+                    <div className="statValue">2400 kWp</div>
+                    <div className="statLabel">FV instalados en el país</div>
                   </div>
                 </div>
                 <div className="col-12 col-sm-4">
                   <div className="statBox">
-                    <div className="statValue">Calidad</div>
-                    <div className="statLabel">Instalación segura</div>
+                    <div className="statValue">298</div>
+                    <div className="statLabel">Revisiones energéticas</div>
                   </div>
                 </div>
                 <div className="col-12 col-sm-4">
                   <div className="statBox">
-                    <div className="statValue">Soporte</div>
-                    <div className="statLabel">Acompañamiento real</div>
+                    <div className="statValue">9</div>
+                    <div className="statLabel">Estaciones de carga VE</div>
                   </div>
                 </div>
               </div>
@@ -334,8 +346,8 @@ export default function HomePage() {
                 <div className="iconBubble" aria-hidden="true">
               <IconWrench />
                 </div>
-                <h3 className="h5 mt-3">Instalación profesional</h3>
-                <p className="text-body-secondary mb-0">Montaje seguro y eficiente de paneles solares.</p>
+                <h3 className="h5 mt-3">Sistemas fotovoltaicos</h3>
+                <p className="text-body-secondary mb-0">Diseño, suministro, montaje y puesta en marcha (red, aislado o híbrido).</p>
               </div>
             </article>
           </div>
@@ -346,8 +358,8 @@ export default function HomePage() {
                 <div className="iconBubble" aria-hidden="true">
               <IconShield />
                 </div>
-                <h3 className="h5 mt-3">Mantenimiento</h3>
-                <p className="text-body-secondary mb-0">Soporte y cuidado para tu sistema solar.</p>
+                <h3 className="h5 mt-3">Tratamiento de agua</h3>
+                <p className="text-body-secondary mb-0">Diseño personalizado, montaje y mantenimiento preventivo/correctivo.</p>
               </div>
             </article>
           </div>
@@ -358,8 +370,8 @@ export default function HomePage() {
                 <div className="iconBubble" aria-hidden="true">
               <IconPiggy />
                 </div>
-                <h3 className="h5 mt-3">Ahorro energético</h3>
-                <p className="text-body-secondary mb-0">Reduce tu factura y mejora tu eficiencia.</p>
+                <h3 className="h5 mt-3">SCADA y automatización</h3>
+                <p className="text-body-secondary mb-0">Monitoreo y control para optimizar procesos y reducir consumo energético.</p>
               </div>
             </article>
           </div>
@@ -369,8 +381,8 @@ export default function HomePage() {
       {/* 3) BENEFICIOS */}
       <section aria-label="Beneficios" data-reveal>
         <div className="text-center">
-          <h2 className="h3 m-0">Nuestros beneficios</h2>
-          <p className="text-body-secondary m-0 mt-2">Energía limpia y renovable</p>
+          <h2 className="h3 m-0">Lo mejor es el proceso</h2>
+          <p className="text-body-secondary m-0 mt-2">Acompañamiento real desde el diseño hasta el postventa</p>
         </div>
 
         <div className="row g-4 mt-3">
@@ -380,8 +392,8 @@ export default function HomePage() {
                 <div className="iconBubble" aria-hidden="true">
               <IconLeaf />
                 </div>
-                <h3 className="h5 mt-3">Ecológico y limpio</h3>
-                <p className="text-body-secondary mb-0">Energía 100% verde.</p>
+                <h3 className="h5 mt-3">Acompañamiento continuo</h3>
+                <p className="text-body-secondary mb-0">Desde la planificación hasta la puesta en marcha y el soporte postventa.</p>
               </div>
             </article>
           </div>
@@ -392,8 +404,8 @@ export default function HomePage() {
                 <div className="iconBubble" aria-hidden="true">
               <IconSun />
                 </div>
-                <h3 className="h5 mt-3">Ahorra dinero</h3>
-                <p className="text-body-secondary mb-0">Reduce tus costos de luz.</p>
+                <h3 className="h5 mt-3">Propuestas atractivas</h3>
+                <p className="text-body-secondary mb-0">Soluciones que equilibran calidad y costo para una inversión eficiente.</p>
               </div>
             </article>
           </div>
@@ -404,8 +416,8 @@ export default function HomePage() {
                 <div className="iconBubble" aria-hidden="true">
               <IconChart />
                 </div>
-                <h3 className="h5 mt-3">Aumenta tu valor</h3>
-                <p className="text-body-secondary mb-0">Incrementa el valor de tu propiedad.</p>
+                <h3 className="h5 mt-3">Colaboración desde el diseño</h3>
+                <p className="text-body-secondary mb-0">Optimizamos el proyecto desde el inicio junto a fabricantes y especialistas.</p>
               </div>
             </article>
           </div>
@@ -415,8 +427,10 @@ export default function HomePage() {
       {/* 4) CTA final */}
       <section className="cta" aria-label="Llamado a la acción" data-reveal>
         <div className="text-center p-4 p-lg-5">
-          <h2 className="h3 m-0">Confía en los expertos</h2>
-          <p className="text-body-secondary mt-2 mb-4">Más de 10 años brindando soluciones solares de calidad.</p>
+          <h2 className="h3 m-0">¿Hablamos de tu proyecto?</h2>
+          <p className="text-body-secondary mt-2 mb-4">
+            Escríbenos y te orientamos con la solución adecuada (fotovoltaica, tratamiento de agua, automatización y más).
+          </p>
           <Link to="/nosotros" className="btn btn-success btn-lg">
             Conócenos
           </Link>

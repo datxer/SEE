@@ -22,22 +22,40 @@ export default function ProjectsPage() {
   */
   const items = [
     {
-      title: 'Instalación residencial',
-      body: 'Sistema solar optimizado para consumo doméstico y ahorro mensual.',
-      src: '/photo_2026-04-17_13-55-45.jpg',
-      alt: 'Instalación residencial con paneles solares',
+      title: 'TABACUBA',
+      body: 'Sistemas fotovoltaicos e iniciativas de eficiencia energética para instalaciones productivas.',
+      src: '/home_1.png',
+      alt: 'Proyecto TABACUBA (imagen de referencia)',
     },
     {
-      title: 'Solución comercial',
-      body: 'Diseño pensado para horarios de operación y eficiencia energética.',
+      title: 'FAO',
+      body: 'Implementaciones en energías renovables y soporte técnico asociado.',
+      src: '/home_2.png',
+      alt: 'Proyecto FAO (imagen de referencia)',
+    },
+    {
+      title: 'CEDAI / 3xE',
+      body: 'Proyectos de energía renovable y eficiencia energética (casos de referencia).',
       src: '/logo.jpg',
-      alt: 'Proyecto comercial (imagen de referencia)',
+      alt: 'Proyecto CEDAI / 3xE (imagen de referencia)',
     },
     {
-      title: 'Mantenimiento preventivo',
-      body: 'Revisión y puesta a punto para mantener rendimiento y seguridad.',
+      title: 'Desalinizadora Las Mangas',
+      body: 'Soluciones vinculadas a tratamiento de agua y soporte técnico.',
       src: '/logo.svg',
-      alt: 'Mantenimiento de sistema solar (imagen de referencia)',
+      alt: 'Proyecto Desalinizadora Las Mangas (imagen de referencia)',
+    },
+    {
+      title: 'Aguas de La Habana',
+      body: 'Asistencia técnica y proyectos asociados a operación eficiente.',
+      src: '/home_1.png',
+      alt: 'Proyecto Aguas de La Habana (imagen de referencia)',
+    },
+    {
+      title: 'TRANSTUR Comunicaciones',
+      body: 'Servicios técnicos e integración eléctrica según requerimientos del cliente.',
+      src: '/home_2.png',
+      alt: 'Proyecto TRANSTUR Comunicaciones (imagen de referencia)',
     },
   ]
 
@@ -56,8 +74,8 @@ export default function ProjectsPage() {
 
         <h1 className="display-6 fw-bold mt-3 mb-2">Proyectos</h1>
         <p className="text-body-secondary mb-0" style={{ maxWidth: 820 }}>
-          Un vistazo a lo que hacemos. Aquí puedes mostrar casos reales con fotos, ubicación (si aplica) y el impacto
-          en ahorro/consumo.
+          Casos y referencias mencionadas en la presentación de SEE. Puedes reemplazar cada imagen por una foto real
+          del proyecto cuando quieras.
         </p>
 
         <div className="row g-3 mt-3" aria-label="Indicadores">

@@ -7,13 +7,61 @@ export default function ServicesPage() {
     Propósito:
     - Mostrar el catálogo de servicios (instalación, mantenimiento, asesoría, etc.).
 
-    Estado actual:
-    - Placeholder simple.
-    - En el futuro aquí podrías:
-      - usar cards / secciones por servicio,
-      - agregar CTA a contacto,
-      - o incluso cargar servicios desde la API.
+    Fuente de contenido:
+    - Esta página se organizó siguiendo el contenido de la presentación (PDF) de la empresa.
+
+    Nota:
+    - No dependemos del PDF en runtime (para evitar “PDF en la web”).
+    - El texto se dejó aquí “hardcoded” para que sea fácil de ajustar.
   */
+
+  /*
+    Lista de servicios según la presentación.
+    La idea es mantener descripciones cortas y claras (tipo catálogo).
+  */
+  const services = [
+    {
+      title: 'Sistemas fotovoltaicos (FV)',
+      body: 'Diseño, suministro, montaje y puesta en marcha (conectados a red, aislados o híbridos).',
+      tags: ['Diseño', 'Montaje', 'Puesta en marcha'],
+    },
+    {
+      title: 'Tratamiento de agua',
+      body: 'Diseño personalizado, montaje y mantenimiento preventivo y correctivo de sistemas de tratamiento de agua.',
+      tags: ['Diseño', 'Mantenimiento', 'Correctivo'],
+    },
+    {
+      title: 'Estaciones de carga para vehículos eléctricos',
+      body: 'Estudios técnicos, instalación y puesta en marcha de estaciones de carga (con integración eléctrica segura).',
+      tags: ['Estudio', 'Instalación', 'Seguridad'],
+    },
+    {
+      title: 'Climatización (HVAC)',
+      body: 'Suministro e instalación de sistemas de climatización eficientes para entornos residenciales y corporativos.',
+      tags: ['Suministro', 'Instalación', 'Eficiencia'],
+    },
+    {
+      title: 'SCADA y automatización',
+      body: 'Diseño, instalación y programación para monitoreo/control de procesos y reducción del consumo energético.',
+      tags: ['Monitoreo', 'Control', 'Optimización'],
+    },
+    {
+      title: 'Revisiones y auditorías energéticas',
+      body: 'Diagnóstico del consumo y propuestas de mejora para aumentar la eficiencia y disminuir costos.',
+      tags: ['Diagnóstico', 'Ahorro', 'Recomendación'],
+    },
+    {
+      title: 'Alumbrado inteligente y sustitución tecnológica',
+      body: 'Modernización de alumbrado para reducir consumo, mejorar control y elevar la calidad del servicio.',
+      tags: ['Modernización', 'Control', 'Ahorro'],
+    },
+    {
+      title: 'Grupos electrógenos',
+      body: 'Asistencia técnica, mantenimiento e integración en soluciones energéticas de respaldo.',
+      tags: ['Asistencia', 'Mantenimiento', 'Respaldo'],
+    },
+  ]
+
   return (
     <div className="vstack gap-5">
       <header
@@ -22,15 +70,15 @@ export default function ServicesPage() {
         data-reveal
       >
         <div className="d-inline-flex gap-2 flex-wrap" aria-label="Etiquetas">
-          <span className="badge bg-success-subtle text-success-emphasis border border-success-subtle">Instalación</span>
-          <span className="badge bg-success-subtle text-success-emphasis border border-success-subtle">Mantenimiento</span>
-          <span className="badge bg-success-subtle text-success-emphasis border border-success-subtle">Asesoría</span>
+          <span className="badge bg-success-subtle text-success-emphasis border border-success-subtle">Ingeniería</span>
+          <span className="badge bg-success-subtle text-success-emphasis border border-success-subtle">Proyectos</span>
+          <span className="badge bg-success-subtle text-success-emphasis border border-success-subtle">Soporte</span>
         </div>
 
         <h1 className="display-6 fw-bold mt-3 mb-2">Servicios</h1>
         <p className="text-body-secondary mb-0" style={{ maxWidth: 820 }}>
-          Soluciones claras, instaladas con criterio técnico y pensadas para que el sistema te rinda bien por años.
-          Aquí tienes un resumen de lo que hacemos.
+          Catálogo de servicios organizado según la presentación de SEE: desde sistemas fotovoltaicos y eficiencia
+          energética, hasta automatización, tratamiento de agua y carga para vehículos eléctricos.
         </p>
 
         <div className="row g-3 mt-3" aria-label="Indicadores">
@@ -38,15 +86,15 @@ export default function ServicesPage() {
             <div className="card h-100 shadow-sm">
               <div className="card-body text-center">
                 <div className="fw-bold">Diagnóstico</div>
-                <div className="text-body-secondary small mt-1">Evaluación inicial del sitio</div>
+                <div className="text-body-secondary small mt-1">Revisiones y auditorías energéticas</div>
               </div>
             </div>
           </div>
           <div className="col-12 col-md-4">
             <div className="card h-100 shadow-sm">
               <div className="card-body text-center">
-                <div className="fw-bold">Instalación</div>
-                <div className="text-body-secondary small mt-1">Montaje y puesta en marcha</div>
+                <div className="fw-bold">Implementación</div>
+                <div className="text-body-secondary small mt-1">Diseño, montaje y puesta en marcha</div>
               </div>
             </div>
           </div>
@@ -54,7 +102,7 @@ export default function ServicesPage() {
             <div className="card h-100 shadow-sm">
               <div className="card-body text-center">
                 <div className="fw-bold">Soporte</div>
-                <div className="text-body-secondary small mt-1">Mantenimiento y seguimiento</div>
+                <div className="text-body-secondary small mt-1">Mantenimiento preventivo y correctivo</div>
               </div>
             </div>
           </div>
@@ -65,71 +113,26 @@ export default function ServicesPage() {
         <h2 className="h3 mb-3">Qué podemos hacer por ti</h2>
 
         <div className="row g-3">
-          <div className="col-12 col-md-4">
-            <article className="card h-100 shadow-sm">
-              <div className="card-body">
-                <h3 className="h6">Instalación de paneles solares</h3>
-                <p className="text-body-secondary">
-                  Diseño e instalación del sistema, priorizando seguridad, rendimiento y una terminación prolija.
-                </p>
-                <div className="d-flex flex-wrap gap-2" aria-label="Incluye">
-                  <span className="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle">
-                    Visita técnica
-                  </span>
-                  <span className="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle">
-                    Instalación
-                  </span>
-                  <span className="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle">
-                    Puesta en marcha
-                  </span>
+          {services.map((service) => (
+            <div key={service.title} className="col-12 col-md-4">
+              <article className="card h-100 shadow-sm">
+                <div className="card-body">
+                  <h3 className="h6">{service.title}</h3>
+                  <p className="text-body-secondary">{service.body}</p>
+                  <div className="d-flex flex-wrap gap-2" aria-label="Incluye">
+                    {service.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </article>
-          </div>
-
-          <div className="col-12 col-md-4">
-            <article className="card h-100 shadow-sm">
-              <div className="card-body">
-                <h3 className="h6">Mantenimiento y soporte</h3>
-                <p className="text-body-secondary">
-                  Revisión preventiva, limpieza, diagnóstico y corrección de fallas para mantener el rendimiento.
-                </p>
-                <div className="d-flex flex-wrap gap-2" aria-label="Incluye">
-                  <span className="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle">
-                    Preventivo
-                  </span>
-                  <span className="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle">
-                    Correctivo
-                  </span>
-                  <span className="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle">
-                    Reporte
-                  </span>
-                </div>
-              </div>
-            </article>
-          </div>
-
-          <div className="col-12 col-md-4">
-            <article className="card h-100 shadow-sm">
-              <div className="card-body">
-                <h3 className="h6">Asesoría energética</h3>
-                <p className="text-body-secondary">
-                  Te ayudamos a elegir la solución adecuada según consumo, presupuesto y objetivos de ahorro.
-                </p>
-                <div className="d-flex flex-wrap gap-2" aria-label="Incluye">
-                  <span className="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle">
-                    Ahorro estimado
-                  </span>
-                  <span className="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle">
-                    Recomendación
-                  </span>
-                  <span className="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle">
-                    Plan de acción
-                  </span>
-                </div>
-              </div>
-            </article>
-          </div>
+              </article>
+            </div>
+          ))}
         </div>
       </section>
 

@@ -164,15 +164,20 @@ export default function Layout() {
               {/*
                 Enlaces clicables:
                 - mailto/tel son un estándar en webs actuales (móvil-friendly).
-                - Si aún no tienes datos reales, cambia aquí cuando quieras.
+                - Datos tomados de la presentación de la empresa.
               */}
-                <a className="text-body-secondary" href="mailto:contacto@tudominio.com">
-                  Email: contacto@tudominio.com
+                <a className="text-body-secondary" href="mailto:ismaray@cedai.com.cu">
+                  Email: ismaray@cedai.com.cu
                 </a>
-                <a className="text-body-secondary" href="tel:+00000000000">
-                  Teléfono: +00 000 000 000
+                <a className="text-body-secondary" href="tel:+5352798676">
+                  Director general: +53 52798676
                 </a>
-                <div className="text-body-secondary">Ubicación: (tu ciudad)</div>
+                <a className="text-body-secondary" href="tel:+5352797280">
+                  Director comercial: +53 52797280
+                </a>
+                <div className="text-body-secondary">
+                  Ubicación: Calle G No. 302, esq. 13, Vedado, Plaza de la Revolución, La Habana, Cuba
+                </div>
               </div>
             </div>
           </section>

@@ -47,6 +47,10 @@
   Aquí solo dejamos estilos visuales del bloque.
 */
 .heroInner {
+  /*
+    El alto del HERO lo define la caja de la imagen (16:9).
+    Así el slider “encaja” perfecto con tus imágenes home (8000x4500).
+  */
   align-items: stretch;
 }
 
@@ -71,18 +75,38 @@
 }
 
 .heroMedia {
-  /* Un poco más alto para un look más “landing” y menos compacto. */
-  min-height: 380px;
+  /*
+    Caja de imagen con proporción 16:9
+    - Coincide con tus PNG (16:9), por eso ahora “encaja” sin bandas raras.
+    - `max-height` evita que el bloque quede gigante en pantallas muy altas.
+  */
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  max-height: 560px;
+  /* Fallback para navegadores viejos o layouts raros */
+  min-height: 280px;
   background: var(--surfaceSolid);
   display: grid;
   place-items: center;
   position: relative;
+  /*
+    Evita que en pantallas anchas la imagen/slider “se pase” del cuadro.
+    El HERO completo también tiene overflow:hidden, pero aquí lo aseguramos
+    a nivel del contenedor de la media.
+  */
+  overflow: hidden;
 }
 
 .heroMedia img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  /*
+    Sin recorte (como antes):
+    - `contain` muestra la imagen completa.
+    - Puede dejar bandas arriba/abajo o a los lados, pero respeta el contenido.
+  */
+  object-fit: contain;
+  object-position: center;
 }
 
 /*
@@ -91,9 +115,15 @@
   - La transición es un fade (opacity).
 */
 .heroSlider {
-  position: relative;
-  width: 100%;
-  height: 100%;
+  /*
+    Hace que el slider SIEMPRE ocupe todo el cuadro.
+    (Con height:100% + min-height a veces el % no se resuelve bien).
+  */
+  position: absolute;
+  inset: 0;
+
+  /* Fondo del cuadro por si carga lento la imagen */
+  background: var(--surfaceSolid);
 }
 
 .heroSlide {
@@ -101,7 +131,9 @@
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  /* Igual que en .heroMedia img: mostrar la imagen completa */
+  object-fit: contain;
+  object-position: center;
   opacity: 0;
   transition: opacity 800ms ease;
   will-change: opacity;
@@ -115,11 +147,15 @@
 .heroNavBtn {
   position: absolute;
   top: 50%;
-  transform: translateY(-50%);
+  /*
+    Aparición/desaparición con transición:
+    - Mantiene translateY para centrar.
+    - Agrega scale para que al aparecer se sienta más suave.
+  */
+  transform: translateY(-50%) scale(0.96);
   z-index: 2;
 
   /* Botón tipo "floating" sobre la imagen */
-  opacity: 0.88;
   box-shadow: var(--shadow);
 
   /* Tamaño cómodo para click/tap */
@@ -132,28 +168,45 @@
   line-height: 1;
 
   /*
-    Requisito: “no se vean hasta que les pases por encima”.
-    - Por defecto están ocultos.
-    - Aparecen al hacer hover en la caja del slider.
-    - También aparecen con teclado (focus-visible) para accesibilidad.
+    Requisito UX:
+    - Ocultos por defecto
+    - Visibles al hacer hover en la caja
+    - También visibles con teclado (focus-visible)
   */
   opacity: 0;
   pointer-events: none;
-  transition: opacity 160ms ease;
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
 }
 
 .heroSlider:hover .heroNavBtn {
   opacity: 0.86;
   pointer-events: auto;
+  transform: translateY(-50%) scale(1);
+}
+
+/*
+  Sin mouse (táctil / teclado):
+  - Si el usuario toca dentro del slider o tabula a los botones, los mostramos.
+  - Mantiene el requisito de “ocultos” en estado idle.
+*/
+.heroSlider:active .heroNavBtn,
+.heroSlider:focus-within .heroNavBtn {
+  opacity: 0.86;
+  pointer-events: auto;
+  transform: translateY(-50%) scale(1);
 }
 
 .heroNavBtn:focus-visible {
   opacity: 1;
   pointer-events: auto;
+  transform: translateY(-50%) scale(1);
 }
 
 .heroNavBtn:hover {
   opacity: 1;
+  transform: translateY(-50%) scale(1);
 }
 
 .heroNavPrev {
