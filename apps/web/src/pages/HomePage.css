@@ -49,17 +49,138 @@
   align-items: stretch;
 }
 
+/*
+  Transición “global” del HERO.
+  Cuando cambia la imagen, también animamos la caja de texto para que se sienta sincronizado.
+*/
+.heroInner.isSwapping .heroMedia,
+.heroInner.isSwapping .heroContent {
+  animation: heroSwapFade 850ms ease;
+}
+
+@keyframes heroSwapFade {
+  from {
+    opacity: 0.92;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .heroMedia {
   min-height: 320px;
   background: var(--surfaceSolid);
   display: grid;
   place-items: center;
+  position: relative;
 }
 
 .heroMedia img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/*
+  Slider del hero
+  - Las imágenes se apilan (position:absolute) y solo la activa queda visible.
+  - La transición es un fade (opacity).
+*/
+.heroSlider {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.heroSlide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 800ms ease;
+  will-change: opacity;
+}
+
+.heroSlide.isActive {
+  opacity: 1;
+}
+
+/* Botones de navegación (anterior / siguiente) */
+.heroNavBtn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+
+  /* “Semi transparente” usando tokens existentes */
+  background: var(--surface);
+  border-color: var(--border);
+  opacity: 0.86;
+
+  /* Tamaño cómodo para click/tap */
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 999px;
+
+  font-size: 24px;
+  line-height: 1;
+
+  /*
+    Requisito: “no se vean hasta que les pases por encima”.
+    - Por defecto están ocultos.
+    - Aparecen al hacer hover en la caja del slider.
+    - También aparecen con teclado (focus-visible) para accesibilidad.
+  */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease;
+}
+
+.heroSlider:hover .heroNavBtn {
+  opacity: 0.86;
+  pointer-events: auto;
+}
+
+.heroNavBtn:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.heroNavBtn:hover {
+  opacity: 1;
+}
+
+.heroNavPrev {
+  left: 12px;
+}
+
+.heroNavNext {
+  right: 12px;
+}
+
+.heroSliderFallback {
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(900px 380px at 75% 15%, rgba(22, 163, 74, 0.12), transparent 62%),
+    radial-gradient(700px 320px at 20% 80%, rgba(15, 23, 42, 0.08), transparent 62%),
+    linear-gradient(180deg, var(--surfaceSolid) 0%, var(--bg) 130%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroSlide {
+    transition: none;
+  }
+
+  .heroInner.isSwapping .heroMedia,
+  .heroInner.isSwapping .heroContent {
+    animation: none;
+  }
 }
 
 .heroContent {

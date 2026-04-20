@@ -31,7 +31,7 @@ export default function Layout() {
     localStorage.setItem(THEME_STORAGE_KEY, theme)
   }, [theme])
 
-  const nextThemeLabel = theme === 'dark' ? 'Modo día' : 'Modo noche'
+  const nextThemeLabel = theme === 'dark' ? 'Modo oscuro' : 'Modo claro'
   const logoSrc = logoFailed ? '/logo.svg' : '/logo.jpg'
 
   return (

@@ -1,8 +1,18 @@
 export type HealthResponse = {
+  // Estructura de la respuesta del endpoint GET /api/health.
+  // Mantener esto tipado evita errores (TypeScript valida el shape esperado).
   status: string
 }
 
 export async function fetchHealth(): Promise<HealthResponse> {
+  /*
+    Llamada simple a la API.
+
+    Importante:
+    - Usamos '/api/...' (ruta relativa) para que en DEV Vite lo proxyee a Rocket
+      (ver vite.config.ts), y en PROD puedas configurar el servidor para servir
+      frontend y backend bajo el mismo dominio.
+  */
   const res = await fetch('/api/health', {
     method: 'GET',
     headers: {
@@ -11,8 +21,10 @@ export async function fetchHealth(): Promise<HealthResponse> {
   })
 
   if (!res.ok) {
+    // Si el backend responde con error, levantamos excepción para que el caller decida qué hacer.
     throw new Error(`API error: ${res.status}`)
   }
 
+  // Parseo explícito a JSON y casteo al tipo esperado.
   return (await res.json()) as HealthResponse
 }

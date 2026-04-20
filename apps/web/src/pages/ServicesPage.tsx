@@ -1,6 +1,17 @@
 export default function ServicesPage() {
-  // Página placeholder: en una web de presentación normalmente tendrá el detalle de servicios.
-  // Se deja simple para que puedas reemplazar el contenido más adelante.
+  /*
+    Página: /servicios
+
+    Propósito:
+    - Mostrar el catálogo de servicios (instalación, mantenimiento, asesoría, etc.).
+
+    Estado actual:
+    - Placeholder simple.
+    - En el futuro aquí podrías:
+      - usar cards / secciones por servicio,
+      - agregar CTA a contacto,
+      - o incluso cargar servicios desde la API.
+  */
   return (
     <div style={{ display: 'grid', gap: 12 }}>
       <h1>Servicios</h1>

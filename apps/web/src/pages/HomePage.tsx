@@ -1,5 +1,35 @@
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import './HomePage.css'
+
+type HeroSlide = {
+  src: string
+  alt: string
+}
+
+/*
+  Slides del hero (la “caja de la foto”).
+
+  - Por ahora dejo assets que YA existen en /public para que el slider funcione hoy mismo.
+  - Cuando me pases tus fotos/promos, solo cambia esta lista por tus archivos
+    (por ejemplo: '/promo-01.jpg', '/promo-02.jpg', etc.).
+
+  Nota: El build de Vite sirve /public en la raíz, por eso los paths empiezan con '/'.
+*/
+const HERO_SLIDES: HeroSlide[] = [
+  {
+    src: '/photo_2026-04-17_13-55-45.jpg',
+    alt: 'Instalación de paneles solares',
+  },
+  {
+    src: '/logo.jpg',
+    alt: 'Logo de la empresa',
+  },
+  {
+    src: '/logo.svg',
+    alt: 'Logo alternativo de la empresa',
+  },
+]
 
 function IconWrench() {
   // Icono inline (SVG) para evitar dependencias y mantener el template autocontenido.
@@ -98,14 +128,129 @@ export default function HomePage() {
     - El backend lo usaremos después para cosas reales (p.ej. formulario de contacto).
   */
 
+  /*
+    Slideshow del HERO
+    - Rotación automática cada X segundos.
+    - Transición “fade” controlada por CSS (opacity + transition).
+    - Si una imagen falla (archivo no existe), la marcamos como fallida y se omite.
+      Esto ayuda cuando luego cambies los nombres de archivos y te equivoques en alguno.
+  */
+
+  const [failedSlideSrcs, setFailedSlideSrcs] = useState<Record<string, true>>({})
+
+  const availableSlides = useMemo(() => {
+    return HERO_SLIDES.filter((s) => !failedSlideSrcs[s.src])
+  }, [failedSlideSrcs])
+
+  const [activeSlideIndex, setActiveSlideIndex] = useState(0)
+
+  // Bandera temporal para disparar una animación CSS al cambiar de slide.
+  // La idea es que el cambio se sienta “en conjunto” (imagen + caja de texto al lado).
+  const [isHeroSwapping, setIsHeroSwapping] = useState(false)
+
+  const goToPrevSlide = () => {
+    if (availableSlides.length === 0) return
+    setActiveSlideIndex((i) => (i - 1 + availableSlides.length) % availableSlides.length)
+  }
+
+  const goToNextSlide = () => {
+    if (availableSlides.length === 0) return
+    setActiveSlideIndex((i) => (i + 1) % availableSlides.length)
+  }
+
+  useEffect(() => {
+    // Si cambia el set de slides disponibles (por errores), ajustamos el índice.
+    if (activeSlideIndex >= availableSlides.length) setActiveSlideIndex(0)
+  }, [activeSlideIndex, availableSlides.length])
+
+  useEffect(() => {
+    // Dispara una animación corta al cambiar de imagen.
+    // Respeta accesibilidad: si el usuario prefiere menos movimiento, no animamos.
+    const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
+    if (prefersReducedMotion) return
+
+    setIsHeroSwapping(true)
+    const timeoutId = window.setTimeout(() => setIsHeroSwapping(false), 850)
+    return () => window.clearTimeout(timeoutId)
+  }, [activeSlideIndex])
+
+  useEffect(() => {
+    // Si solo hay 0/1 slide, no hay nada que rotar.
+    if (availableSlides.length < 2) return
+
+    // Respeta accesibilidad: si el usuario prefiere menos movimiento, no auto-rotamos.
+    const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
+    if (prefersReducedMotion) return
+
+    const intervalId = window.setInterval(() => {
+      setActiveSlideIndex((i) => (i + 1) % availableSlides.length)
+    }, 7000)
+
+    return () => window.clearInterval(intervalId)
+  }, [availableSlides.length])
+
   return (
     <div>
       {/* 1) HERO: imagen + título + subtítulo + botones (como en la plantilla) */}
       <section className="hero" aria-label="Sección principal">
-        <div className="heroInner">
+        <div className={isHeroSwapping ? 'heroInner isSwapping' : 'heroInner'}>
           <div className="heroMedia">
-            {/* Imagen local (placeholder libre) para que no dependas de links externos */}
-            <img src="/photo_2026-04-17_13-55-45.jpg" alt="Ilustración de paneles solares" />
+            {/*
+              Slider con transición.
+              - Renderizamos todas las imágenes “apiladas” y con CSS hacemos el fade.
+              - `alt` solo en la slide activa para que lectores de pantalla no “lean” todas.
+            */}
+            <div className="heroSlider" aria-label="Galería de fotos y promociones">
+              {availableSlides.length === 0 ? (
+                // Fallback súper simple si todas las imágenes fallaron.
+                <div className="heroSliderFallback" aria-label="Sin imágenes disponibles" />
+              ) : (
+                availableSlides.map((slide, index) => (
+                  <img
+                    key={slide.src}
+                    className={index === activeSlideIndex ? 'heroSlide isActive' : 'heroSlide'}
+                    src={slide.src}
+                    alt={index === activeSlideIndex ? slide.alt : ''}
+                    aria-hidden={index !== activeSlideIndex}
+                    draggable={false}
+                    onError={() =>
+                      setFailedSlideSrcs((prev) => {
+                        if (prev[slide.src]) return prev
+                        return { ...prev, [slide.src]: true }
+                      })
+                    }
+                  />
+                ))
+              )}
+
+              {/*
+                Controles manuales del slider.
+                - Botones semi transparentes encima de la imagen.
+                - En el medio (verticalmente) de la caja.
+              */}
+              {availableSlides.length > 1 ? (
+                <>
+                  <button
+                    type="button"
+                    className="btn heroNavBtn heroNavPrev"
+                    onClick={goToPrevSlide}
+                    aria-label="Imagen anterior"
+                    title="Anterior"
+                  >
+                    ‹
+                  </button>
+                  <button
+                    type="button"
+                    className="btn heroNavBtn heroNavNext"
+                    onClick={goToNextSlide}
+                    aria-label="Imagen siguiente"
+                    title="Siguiente"
+                  >
+                    ›
+                  </button>
+                </>
+              ) : null}
+            </div>
           </div>
 
           <div className="heroContent">
