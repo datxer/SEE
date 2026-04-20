@@ -190,11 +190,15 @@ export default function HomePage() {
   }, [availableSlides.length])
 
   return (
-    <div>
-      {/* 1) HERO: imagen + título + subtítulo + botones (como en la plantilla) */}
-      <section className="hero" aria-label="Sección principal">
-        <div className={isHeroSwapping ? 'heroInner isSwapping' : 'heroInner'}>
-          <div className="heroMedia">
+    <div className="vstack gap-5">
+      {/*
+        1) HERO
+        - Layout moderno tipo landing actual: media grande + copy + CTA.
+        - Usamos Bootstrap para grid y spacing, y CSS local para el slider/gradientes.
+      */}
+      <section className="hero" aria-label="Sección principal" data-reveal>
+        <div className={isHeroSwapping ? 'heroInner row g-0 isSwapping' : 'heroInner row g-0'}>
+          <div className="heroMedia col-lg-6">
             {/*
               Slider con transición.
               - Renderizamos todas las imágenes “apiladas” y con CSS hacemos el fade.
@@ -232,7 +236,7 @@ export default function HomePage() {
                 <>
                   <button
                     type="button"
-                    className="btn heroNavBtn heroNavPrev"
+                    className="btn btn-light heroNavBtn heroNavPrev"
                     onClick={goToPrevSlide}
                     aria-label="Imagen anterior"
                     title="Anterior"
@@ -241,7 +245,7 @@ export default function HomePage() {
                   </button>
                   <button
                     type="button"
-                    className="btn heroNavBtn heroNavNext"
+                    className="btn btn-light heroNavBtn heroNavNext"
                     onClick={goToNextSlide}
                     aria-label="Imagen siguiente"
                     title="Siguiente"
@@ -253,97 +257,170 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="heroContent">
-            <h1 className="heroTitle">
-              Energía <strong>Solar</strong> para un Futuro <strong>Sostenible</strong>
-            </h1>
-            <p className="heroSubtitle">
-              Ahorra energía y cuida el planeta con soluciones solares pensadas para hogares y empresas.
-            </p>
+          <div className="heroContent col-lg-6">
+            <div className="p-4 p-lg-5">
+              <div className="d-inline-flex align-items-center gap-2 badgeRow" aria-label="Etiquetas">
+                <span className="badge bg-success-subtle text-success-emphasis border border-success-subtle">
+                  Energía solar
+                </span>
+                <span className="badge text-bg-secondary">Residencial</span>
+                <span className="badge text-bg-secondary">Comercial</span>
+              </div>
 
-            <div className="heroActions">
-              {/* CTA principal -> contacto (lead) */}
-              <a href="#contacto" className="btn btnPrimary">
-                Solicitar Asesoría
-              </a>
+              <h1 className="heroTitle display-5 fw-bold mt-3 mb-2">
+                Energía <span className="text-success">Solar</span> para un Futuro <span className="text-success">Sostenible</span>
+              </h1>
+              <p className="heroSubtitle text-body-secondary mb-4">
+                Ahorra energía y cuida el planeta con soluciones solares pensadas para hogares y empresas.
+              </p>
 
-              {/* CTA secundaria -> servicios */}
-              <Link to="/servicios" className="btn btnGhost">
-                Ver Más
-              </Link>
+              <div className="d-flex gap-2 flex-wrap">
+                {/* CTA principal -> contacto (lead) */}
+                <a href="#contacto" className="btn btn-success btn-lg">
+                  Solicitar Asesoría
+                </a>
+
+                {/* CTA secundaria -> servicios */}
+                <Link to="/servicios" className="btn btn-outline-success btn-lg">
+                  Ver servicios
+                </Link>
+              </div>
+
+              {/*
+                Mini “stats bar” (patrón típico en templates modernos).
+                Son texto placeholder: ajusta a tus datos reales cuando quieras.
+              */}
+              <div className="heroStats row g-2 mt-4" aria-label="Indicadores">
+                <div className="col-12 col-sm-4">
+                  <div className="statBox">
+                    <div className="statValue">Ahorro</div>
+                    <div className="statLabel">Reduce tu factura</div>
+                  </div>
+                </div>
+                <div className="col-12 col-sm-4">
+                  <div className="statBox">
+                    <div className="statValue">Calidad</div>
+                    <div className="statLabel">Instalación segura</div>
+                  </div>
+                </div>
+                <div className="col-12 col-sm-4">
+                  <div className="statBox">
+                    <div className="statValue">Soporte</div>
+                    <div className="statLabel">Acompañamiento real</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 2) SERVICIOS: 3 cards */}
-      <section className="section" aria-label="Servicios destacados">
-        <div className="cardGrid">
-          <article className="featureCard">
-            <div className="iconBubble" aria-hidden="true">
+      {/* 2) SERVICIOS: cards */}
+      <section aria-label="Servicios destacados" data-reveal>
+        <div className="d-flex align-items-end justify-content-between gap-3 flex-wrap">
+          <div>
+            <h2 className="h3 m-0">Servicios</h2>
+            <p className="text-body-secondary m-0 mt-2">De la asesoría a la instalación, con soporte.</p>
+          </div>
+          <Link to="/servicios" className="btn btn-outline-success">
+            Ver catálogo
+          </Link>
+        </div>
+
+        <div className="row g-4 mt-3">
+          <div className="col-12 col-md-4">
+            <article className="featureCard card h-100 shadow-sm">
+              <div className="card-body text-center">
+                <div className="iconBubble" aria-hidden="true">
               <IconWrench />
-            </div>
-            <h3>Instalación Profesional</h3>
-            <p className="muted">Montaje seguro y eficiente de paneles solares.</p>
-          </article>
+                </div>
+                <h3 className="h5 mt-3">Instalación profesional</h3>
+                <p className="text-body-secondary mb-0">Montaje seguro y eficiente de paneles solares.</p>
+              </div>
+            </article>
+          </div>
 
-          <article className="featureCard">
-            <div className="iconBubble" aria-hidden="true">
+          <div className="col-12 col-md-4">
+            <article className="featureCard card h-100 shadow-sm">
+              <div className="card-body text-center">
+                <div className="iconBubble" aria-hidden="true">
               <IconShield />
-            </div>
-            <h3>Mantenimiento</h3>
-            <p className="muted">Soporte y cuidado para tu sistema solar.</p>
-          </article>
+                </div>
+                <h3 className="h5 mt-3">Mantenimiento</h3>
+                <p className="text-body-secondary mb-0">Soporte y cuidado para tu sistema solar.</p>
+              </div>
+            </article>
+          </div>
 
-          <article className="featureCard">
-            <div className="iconBubble" aria-hidden="true">
+          <div className="col-12 col-md-4">
+            <article className="featureCard card h-100 shadow-sm">
+              <div className="card-body text-center">
+                <div className="iconBubble" aria-hidden="true">
               <IconPiggy />
-            </div>
-            <h3>Ahorro Energético</h3>
-            <p className="muted">Reduce tu factura y mejora tu eficiencia.</p>
-          </article>
+                </div>
+                <h3 className="h5 mt-3">Ahorro energético</h3>
+                <p className="text-body-secondary mb-0">Reduce tu factura y mejora tu eficiencia.</p>
+              </div>
+            </article>
+          </div>
         </div>
       </section>
 
-      {/* 3) BENEFICIOS: título + 3 cards */}
-      <section className="section" aria-label="Beneficios">
-        <h2 className="sectionTitle">Nuestros Beneficios</h2>
-        <p className="sectionSubtitle">Energía limpia y renovable</p>
+      {/* 3) BENEFICIOS */}
+      <section aria-label="Beneficios" data-reveal>
+        <div className="text-center">
+          <h2 className="h3 m-0">Nuestros beneficios</h2>
+          <p className="text-body-secondary m-0 mt-2">Energía limpia y renovable</p>
+        </div>
 
-        <div className="cardGrid">
-          <article className="featureCard">
-            <div className="iconBubble" aria-hidden="true">
+        <div className="row g-4 mt-3">
+          <div className="col-12 col-md-4">
+            <article className="featureCard card h-100 shadow-sm">
+              <div className="card-body text-center">
+                <div className="iconBubble" aria-hidden="true">
               <IconLeaf />
-            </div>
-            <h3>Ecológico y Limpio</h3>
-            <p className="muted">Energía 100% verde.</p>
-          </article>
+                </div>
+                <h3 className="h5 mt-3">Ecológico y limpio</h3>
+                <p className="text-body-secondary mb-0">Energía 100% verde.</p>
+              </div>
+            </article>
+          </div>
 
-          <article className="featureCard">
-            <div className="iconBubble" aria-hidden="true">
+          <div className="col-12 col-md-4">
+            <article className="featureCard card h-100 shadow-sm">
+              <div className="card-body text-center">
+                <div className="iconBubble" aria-hidden="true">
               <IconSun />
-            </div>
-            <h3>Ahorra Dinero</h3>
-            <p className="muted">Reduce tus costos de luz.</p>
-          </article>
+                </div>
+                <h3 className="h5 mt-3">Ahorra dinero</h3>
+                <p className="text-body-secondary mb-0">Reduce tus costos de luz.</p>
+              </div>
+            </article>
+          </div>
 
-          <article className="featureCard">
-            <div className="iconBubble" aria-hidden="true">
+          <div className="col-12 col-md-4">
+            <article className="featureCard card h-100 shadow-sm">
+              <div className="card-body text-center">
+                <div className="iconBubble" aria-hidden="true">
               <IconChart />
-            </div>
-            <h3>Aumenta tu Valor</h3>
-            <p className="muted">Incrementa el valor de tu propiedad.</p>
-          </article>
+                </div>
+                <h3 className="h5 mt-3">Aumenta tu valor</h3>
+                <p className="text-body-secondary mb-0">Incrementa el valor de tu propiedad.</p>
+              </div>
+            </article>
+          </div>
         </div>
       </section>
 
       {/* 4) CTA final */}
-      <section className="cta" aria-label="Llamado a la acción">
-        <h2 className="sectionTitle">Confía en los Expertos</h2>
-        <p>Más de 10 años brindando soluciones solares de calidad.</p>
-        <Link to="/nosotros" className="btn btnPrimary">
-          Conócenos
-        </Link>
+      <section className="cta" aria-label="Llamado a la acción" data-reveal>
+        <div className="text-center p-4 p-lg-5">
+          <h2 className="h3 m-0">Confía en los expertos</h2>
+          <p className="text-body-secondary mt-2 mb-4">Más de 10 años brindando soluciones solares de calidad.</p>
+          <Link to="/nosotros" className="btn btn-success btn-lg">
+            Conócenos
+          </Link>
+        </div>
       </section>
     </div>
   )

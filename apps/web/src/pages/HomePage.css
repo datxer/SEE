@@ -42,10 +42,11 @@
     0 0 64px rgba(22, 163, 74, 0.08);
 }
 
+/*
+  El layout (2 columnas) lo maneja Bootstrap con .row + .col-lg-6.
+  Aquí solo dejamos estilos visuales del bloque.
+*/
 .heroInner {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 18px;
   align-items: stretch;
 }
 
@@ -70,7 +71,8 @@
 }
 
 .heroMedia {
-  min-height: 320px;
+  /* Un poco más alto para un look más “landing” y menos compacto. */
+  min-height: 380px;
   background: var(--surfaceSolid);
   display: grid;
   place-items: center;
@@ -116,10 +118,9 @@
   transform: translateY(-50%);
   z-index: 2;
 
-  /* “Semi transparente” usando tokens existentes */
-  background: var(--surface);
-  border-color: var(--border);
-  opacity: 0.86;
+  /* Botón tipo "floating" sobre la imagen */
+  opacity: 0.88;
+  box-shadow: var(--shadow);
 
   /* Tamaño cómodo para click/tap */
   width: 44px;
@@ -183,68 +184,24 @@
   }
 }
 
-.heroContent {
-  padding: 28px;
-  display: grid;
-  align-content: center;
-  gap: 14px;
-}
-
-.heroTitle {
-  margin: 0;
-  font-size: 40px;
-  line-height: 1.1;
-}
-
-.heroTitle strong {
-  color: var(--brand);
-}
-
+/* El copy del hero se apoya en utilidades Bootstrap; aquí solo ajustes finos */
 .heroSubtitle {
-  margin: 0;
-  color: var(--muted);
-  max-width: 44ch;
-}
-
-.heroActions {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-top: 6px;
-}
-
-.section {
-  margin-top: 26px;
-}
-
-.sectionTitle {
-  text-align: center;
-  margin: 0;
-  font-size: 28px;
-}
-
-.sectionSubtitle {
-  text-align: center;
-  color: var(--muted);
-  margin: 10px 0 0;
-}
-
-.cardGrid {
-  margin-top: 18px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  max-width: 60ch;
 }
 
 .featureCard {
-  background: var(--surfaceSolid);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 18px;
-  display: grid;
-  gap: 8px;
-  text-align: center;
-  box-shadow: var(--shadow);
+  /* Micro-interacción típica en webs actuales */
+  transition:
+    transform var(--durBase) var(--easeOut),
+    border-color var(--durBase) var(--easeOut),
+    background var(--durBase) var(--easeOut);
+}
+
+@media (hover: hover) {
+  .featureCard:hover {
+    transform: translateY(-2px);
+    border-color: rgba(22, 163, 74, 0.20);
+  }
 }
 
 .iconBubble {
@@ -258,33 +215,30 @@
   color: var(--brand);
 }
 
+/* Mini “stats” del hero */
+.statBox {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 12px;
+}
+
+.statValue {
+  font-weight: 900;
+  letter-spacing: -0.01em;
+}
+
+.statLabel {
+  color: var(--muted);
+  font-weight: 650;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
 .cta {
-  margin-top: 30px;
-  padding: 26px;
-  text-align: center;
   border-radius: 18px;
   border: 1px solid var(--border);
   background:
     radial-gradient(900px 260px at 50% 0%, rgba(22, 163, 74, 0.12), transparent 62%),
     linear-gradient(180deg, var(--surfaceSolid) 0%, var(--bg) 130%);
-}
-
-.cta p {
-  color: var(--muted);
-  margin: 8px 0 18px;
-}
-
-/* Responsive: en móvil, apilamos la columna de imagen y texto */
-@media (max-width: 860px) {
-  .heroInner {
-    grid-template-columns: 1fr;
-  }
-
-  .cardGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .heroTitle {
-    font-size: 34px;
-  }
 }

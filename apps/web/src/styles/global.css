@@ -6,6 +6,9 @@
 
 :root {
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 
   /* Paleta inspirada en la plantilla (verde + grises). */
   --brand: #16a34a;
@@ -22,6 +25,41 @@
   --headerBg: rgba(230, 237, 243, 0.78);
   --shadow: 0 14px 40px rgba(15, 23, 42, 0.06);
 
+  /* Motion: una variable para que el UI se sienta "suave" y consistente. */
+  --easeOut: cubic-bezier(0.16, 1, 0.3, 1);
+  --durFast: 140ms;
+  --durBase: 220ms;
+
+  /*
+    Bootstrap theme mapping
+    - Bootstrap usa variables CSS (prefijo --bs-*) para pintar botones, cards, etc.
+    - Mapeamos tu “base” (verde + fondos) a esos tokens para que TODO el framework
+      se vea coherente sin tener que escribir CSS para cada componente.
+  */
+  --bs-body-font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
+  --bs-body-color: var(--text);
+  --bs-body-bg: var(--bg);
+  --bs-primary: var(--brand);
+  --bs-primary-rgb: 22, 163, 74;
+  --bs-link-color: var(--brand);
+  --bs-link-hover-color: var(--brandDark);
+  --bs-border-color: var(--border);
+  --bs-secondary-color: var(--muted);
+  --bs-tertiary-bg: var(--surface);
+  --bs-border-radius: 1rem;
+  --bs-border-radius-lg: 1.25rem;
+  --bs-box-shadow-sm: 0 10px 26px rgba(15, 23, 42, 0.06);
+
+  /* Navbar defaults (para que el header se vea bien sin CSS extra) */
+  --bs-nav-link-color: var(--text);
+  --bs-nav-link-hover-color: var(--text);
+  --bs-navbar-color: var(--text);
+  --bs-navbar-hover-color: var(--text);
+  --bs-navbar-active-color: var(--text);
+  --bs-navbar-brand-color: var(--text);
+  --bs-navbar-brand-hover-color: var(--text);
+  --bs-navbar-toggler-border-color: rgba(22, 163, 74, 0.22);
+
   color: var(--text);
   background: var(--bg);
 }
@@ -32,17 +70,40 @@ body,
   height: 100%;
 }
 
+html {
+  /* UX moderno: scroll suave (se desactiva con prefers-reduced-motion abajo). */
+  scroll-behavior: smooth;
+}
+
 :root[data-theme="dark"] {
   --text: rgba(248, 250, 252, 0.92);
   --muted: rgba(226, 232, 240, 0.66);
 
-  --bg: #0b1220;
-  --surface: rgba(15, 23, 42, 0.72);
-  --surfaceSolid: #0f172a;
-  --surfaceHover: rgba(15, 23, 42, 0.84);
-  --border: rgba(226, 232, 240, 0.14);
-  --headerBg: rgba(11, 18, 32, 0.70);
-  --shadow: 0 16px 46px rgba(0, 0, 0, 0.38);
+  /*
+    Dark tech: fondo más profundo y superficies tipo glass.
+    Mantiene la base (verde) pero mejora contraste y “premium feel”.
+  */
+  --bg: #050814;
+  --surface: rgba(12, 18, 34, 0.72);
+  --surfaceSolid: #0b1220;
+  --surfaceHover: rgba(12, 18, 34, 0.86);
+  --border: rgba(226, 232, 240, 0.12);
+  --headerBg: rgba(5, 8, 20, 0.72);
+  --shadow: 0 18px 54px rgba(0, 0, 0, 0.48);
+
+  /* Bootstrap vars para dark */
+  --bs-body-color: var(--text);
+  --bs-body-bg: var(--bg);
+  --bs-border-color: var(--border);
+  --bs-secondary-color: var(--muted);
+  --bs-tertiary-bg: var(--surface);
+  --bs-nav-link-color: var(--text);
+  --bs-nav-link-hover-color: var(--text);
+  --bs-navbar-color: var(--text);
+  --bs-navbar-hover-color: var(--text);
+  --bs-navbar-active-color: var(--text);
+  --bs-navbar-brand-color: var(--text);
+  --bs-navbar-brand-hover-color: var(--text);
 }
 
 * {
@@ -53,6 +114,64 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
+  line-height: 1.5;
+}
+
+/*
+  Animación de aparición (reveal)
+  - Se activa con el atributo data-reveal en el HTML/JSX.
+  - El JS agrega .reveal (estado inicial) y luego .is-revealed al entrar en viewport.
+  - Implementación: src/lib/reveal.ts
+*/
+.reveal {
+  opacity: 0;
+  transform: translate3d(0, 10px, 0);
+  transition:
+    opacity 520ms var(--easeOut),
+    transform 520ms var(--easeOut);
+  will-change: opacity, transform;
+}
+
+.reveal.is-revealed {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+/*
+  Fondo "tech" (solo modo oscuro)
+  - Grid sutil + glows de marca
+  - No interfiere con clicks (pointer-events:none)
+*/
+:root[data-theme="dark"] body {
+  position: relative;
+}
+
+:root[data-theme="dark"] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+
+  background:
+    radial-gradient(900px 520px at 20% 10%, rgba(22, 163, 74, 0.14), transparent 62%),
+    radial-gradient(900px 520px at 85% 30%, rgba(22, 163, 74, 0.10), transparent 62%),
+    repeating-linear-gradient(
+      90deg,
+      rgba(22, 163, 74, 0.055) 0,
+      rgba(22, 163, 74, 0.055) 1px,
+      transparent 1px,
+      transparent 72px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(22, 163, 74, 0.045) 0,
+      rgba(22, 163, 74, 0.045) 1px,
+      transparent 1px,
+      transparent 72px
+    );
+
+  opacity: 0.55;
 }
 
 a {
@@ -60,66 +179,36 @@ a {
   text-decoration: none;
 }
 
-/* Botones reutilizables (sin dependencia de librerías UI) */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-
-  padding: 10px 14px;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-
-  background: var(--surface);
-  color: var(--text);
-  font-weight: 700;
-  line-height: 1;
-
-  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.06);
-
-  cursor: pointer;
-  user-select: none;
+/* Mantener una estética consistente en textos */
+h1,
+h2,
+h3 {
+  letter-spacing: -0.01em;
 }
 
-.btn:hover {
-  background: var(--surfaceHover);
-}
-
-.btn:focus-visible {
-  outline: none;
-  box-shadow:
-    0 0 0 3px rgba(22, 163, 74, 0.25),
-    0 10px 26px rgba(15, 23, 42, 0.08);
-}
-
-.btnSmall {
-  padding: 9px 12px;
-  border-radius: 12px;
-  font-weight: 800;
-}
-
-.btnPrimary {
-  background: var(--brand);
-  border-color: var(--brandDark);
-  color: #ffffff;
-}
-
-.btnPrimary:hover {
-  background: var(--brandDark);
-}
-
-.btnGhost {
-  background: rgba(22, 163, 74, 0.08);
-  border-color: rgba(22, 163, 74, 0.20);
-}
-
-.btnGhost:hover {
-  background: rgba(22, 163, 74, 0.16);
+/* Selección de texto con el color de marca (sutil) */
+::selection {
+  background: rgba(22, 163, 74, 0.22);
 }
 
 .muted {
   color: var(--muted);
+}
+
+/*
+  Accesibilidad:
+  - Si el usuario prefiere menos movimiento, quitamos animaciones/transiciones globales.
+  - También desactivamos el scroll suave.
+*/
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 
 code {

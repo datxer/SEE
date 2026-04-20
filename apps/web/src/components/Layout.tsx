@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Link, Outlet } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import './Layout.css'
+import { setupRevealOnScroll } from '../lib/reveal'
 
 type Theme = 'light' | 'dark'
 
@@ -25,67 +26,158 @@ export default function Layout() {
   */
   const [theme, setTheme] = useState<Theme>(() => getInitialTheme())
   const [logoFailed, setLogoFailed] = useState(false)
+  const [isNavOpen, setIsNavOpen] = useState(false)
+  const location = useLocation()
 
   useEffect(() => {
+    /*
+      Tema (claro/oscuro)
+      - data-theme: lo seguimos usando para tus variables propias.
+      - data-bs-theme: Bootstrap 5.3 lo usa para adaptar colores internos.
+    */
     document.documentElement.dataset.theme = theme
+    document.documentElement.dataset.bsTheme = theme
     localStorage.setItem(THEME_STORAGE_KEY, theme)
   }, [theme])
 
-  const nextThemeLabel = theme === 'dark' ? 'Modo oscuro' : 'Modo claro'
+  useEffect(() => {
+    /*
+      Animaciones de aparición (reveal)
+      - Se re-ejecuta en cada cambio de ruta porque el contenido del <Outlet /> cambia.
+      - No rompe accesibilidad: si el usuario prefiere menos movimiento, se desactiva.
+    */
+    const cleanup = setupRevealOnScroll()
+    return cleanup
+  }, [location.pathname])
+
+  // Texto del botón = acción que ocurrirá al hacer click (no el estado actual).
+  const nextThemeLabel = theme === 'dark' ? 'Modo claro' : 'Modo oscuro'
   const logoSrc = logoFailed ? '/logo.svg' : '/logo.jpg'
 
   return (
-    <div className="layout">
-      <header className="siteHeader">
-        <div className="headerInner">
-          {/* Marca: en la plantilla hay un logo + nombre. Aquí usamos un "mark" simple (sin assets externos). */}
-          <Link to="/" className="brand" aria-label="Ir al inicio">
-            <img
-              className="brandLogo"
-              src={logoSrc}
-              alt="Soluciones Energéticamente Eficientes"
-              onError={() => setLogoFailed(true)}
-            />
-            <span className="brandName">Soluciones Energéticamente Eficientes</span>
-          </Link>
+    <div className="layout d-flex flex-column min-vh-100">
+      {/*
+        Accesibilidad:
+        - "Skip link" para saltar la navegación e ir directo al contenido.
+        - Es invisible hasta que lo enfocas con teclado.
+      */}
+      <a className="skipLink" href="#main">
+        Saltar al contenido
+      </a>
 
-          {/* Navegación principal (rutas) */}
-          <nav className="navLinks" aria-label="Navegación principal">
-            <Link to="/">Inicio</Link>
-            <Link to="/servicios">Servicios</Link>
-            <Link to="/nosotros">Nosotros</Link>
-            <Link to="/proyectos">Proyectos</Link>
+      <header className="siteHeader sticky-top border-bottom">
+        <nav className="navbar navbar-expand-lg">
+          <div className="container-xxl py-3">
+            {/* Marca: logo + nombre */}
+            <Link to="/" className="navbar-brand brand" aria-label="Ir al inicio" onClick={() => setIsNavOpen(false)}>
+              <img
+                className="brandLogo"
+                src={logoSrc}
+                alt="Soluciones Energéticamente Eficientes"
+                onError={() => setLogoFailed(true)}
+              />
+              <span className="brandName">Soluciones Energéticamente Eficientes</span>
+            </Link>
 
+            {/*
+              Menú responsive (sin depender del JS de Bootstrap)
+              - Bootstrap aporta estilos del “collapse”, pero el estado lo manejamos nosotros.
+            */}
             <button
               type="button"
-              className="btn btnGhost btnSmall themeToggle"
-              onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
-              aria-label={nextThemeLabel}
-              aria-pressed={theme === 'dark'}
-              title={nextThemeLabel}
+              className="navbar-toggler"
+              aria-controls="siteNav"
+              aria-expanded={isNavOpen}
+              aria-label="Mostrar u ocultar navegación"
+              onClick={() => setIsNavOpen((v) => !v)}
             >
-              {nextThemeLabel}
+              <span className="navbar-toggler-icon" aria-hidden="true" />
             </button>
-          </nav>
-        </div>
+
+            <div id="siteNav" className={isNavOpen ? 'collapse navbar-collapse show' : 'collapse navbar-collapse'}>
+              <div className="navbar-nav ms-auto gap-1 navPills" aria-label="Navegación principal">
+                <NavLink
+                  to="/"
+                  end
+                  onClick={() => setIsNavOpen(false)}
+                  className={({ isActive }) => (isActive ? 'nav-link navPill active' : 'nav-link navPill')}
+                >
+                  Inicio
+                </NavLink>
+                <NavLink
+                  to="/servicios"
+                  onClick={() => setIsNavOpen(false)}
+                  className={({ isActive }) => (isActive ? 'nav-link navPill active' : 'nav-link navPill')}
+                >
+                  Servicios
+                </NavLink>
+                <NavLink
+                  to="/nosotros"
+                  onClick={() => setIsNavOpen(false)}
+                  className={({ isActive }) => (isActive ? 'nav-link navPill active' : 'nav-link navPill')}
+                >
+                  Nosotros
+                </NavLink>
+                <NavLink
+                  to="/proyectos"
+                  onClick={() => setIsNavOpen(false)}
+                  className={({ isActive }) => (isActive ? 'nav-link navPill active' : 'nav-link navPill')}
+                >
+                  Proyectos
+                </NavLink>
+
+                {/* CTA a contacto (patrón común de templates informativos) */}
+                <a
+                  href="#contacto"
+                  className="btn btn-success btn-sm navCtaBtn"
+                  onClick={() => setIsNavOpen(false)}
+                >
+                  Contacto
+                </a>
+
+                <button
+                  type="button"
+                  className="btn btn-outline-success btn-sm themeToggle"
+                  onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
+                  aria-label={nextThemeLabel}
+                  aria-pressed={theme === 'dark'}
+                  title={nextThemeLabel}
+                >
+                  {nextThemeLabel}
+                </button>
+              </div>
+            </div>
+          </div>
+        </nav>
       </header>
 
-      <main className="main">
+      <main id="main" className="main container-xxl flex-fill py-5">
         <Outlet />
       </main>
 
-      <footer className="siteFooter" aria-label="Pie de página">
-        <div className="footerInner">
-          <section id="contacto" className="contactBox" aria-label="Contacto">
-            <h2 className="contactBoxTitle">Contacto</h2>
-            <div className="contactItems">
-              <div className="muted">Email: contacto@tudominio.com</div>
-              <div className="muted">Teléfono: +00 000 000 000</div>
-              <div className="muted">Ubicación: (tu ciudad)</div>
+      <footer className="siteFooter border-top bg-body-tertiary" aria-label="Pie de página">
+        <div className="container-xxl py-4 d-grid gap-3">
+          <section id="contacto" className="contactBox card shadow-sm" aria-label="Contacto">
+            <div className="card-body">
+              <h2 className="contactBoxTitle h6 m-0">Contacto</h2>
+              <div className="contactItems mt-2 d-grid gap-2">
+              {/*
+                Enlaces clicables:
+                - mailto/tel son un estándar en webs actuales (móvil-friendly).
+                - Si aún no tienes datos reales, cambia aquí cuando quieras.
+              */}
+                <a className="text-body-secondary" href="mailto:contacto@tudominio.com">
+                  Email: contacto@tudominio.com
+                </a>
+                <a className="text-body-secondary" href="tel:+00000000000">
+                  Teléfono: +00 000 000 000
+                </a>
+                <div className="text-body-secondary">Ubicación: (tu ciudad)</div>
+              </div>
             </div>
           </section>
 
-          <div className="footerNote">
+          <div className="footerNote d-flex justify-content-between gap-2 flex-wrap text-body-secondary fw-semibold">
             <span>Soluciones Energéticamente Eficientes</span>
             <span>© {new Date().getFullYear()}</span>
           </div>
