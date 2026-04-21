@@ -52,7 +52,7 @@ export default function Layout() {
 
   // Texto del botón = acción que ocurrirá al hacer click (no el estado actual).
   const nextThemeLabel = theme === 'dark' ? 'Modo claro' : 'Modo oscuro'
-  const logoSrc = logoFailed ? '/logo.svg' : '/logo.jpg'
+  const logoSrc = '/logo.jpg'
 
   return (
     <div className="layout d-flex flex-column min-vh-100">
