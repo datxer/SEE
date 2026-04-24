@@ -1,72 +1,51 @@
 /*
   Home (Landing)
-  Esta hoja de estilos replica la estructura visual del mock:
-  1) Hero con imagen + texto + botones
-  2) Bloque de "servicios" (3 cards)
-  3) Beneficios (3 cards)
-  4) CTA final
-
-  Nota: Los colores están centralizados en variables CSS (ver global.css).
+  - Dirección visual moderna con bloques premium y fondos dinámicos.
+  - Mantiene la estructura actual pero mejora profundidad y motion.
 */
 
 .hero {
-  /* Fondo suave tipo "olas" para parecerse al ejemplo */
+  position: relative;
+  isolation: isolate;
+  padding: 10px;
   background:
-    radial-gradient(900px 380px at 75% 15%, rgba(22, 163, 74, 0.12), transparent 62%),
-    radial-gradient(700px 320px at 20% 80%, rgba(15, 23, 42, 0.08), transparent 62%),
-    linear-gradient(180deg, var(--surfaceSolid) 0%, var(--bg) 130%);
-  border-radius: 18px;
+    radial-gradient(900px 420px at 78% 12%, color-mix(in srgb, var(--brand) 22%, transparent), transparent 66%),
+    radial-gradient(680px 320px at 10% 90%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 72%),
+    linear-gradient(180deg, var(--surface-solid) 0%, color-mix(in srgb, var(--surface) 72%, transparent) 120%);
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border);
-  overflow: hidden;
+  overflow: clip;
 }
 
-/* Modo día: borde con difuminado (glow) hacia el fondo */
-:root[data-theme="light"] .hero,
-:root[data-theme="light"] .cta,
-:root[data-theme="light"] .featureCard {
-  box-shadow:
-    var(--shadow),
-    0 0 0 1px rgba(22, 163, 74, 0.10),
-    0 0 34px rgba(22, 163, 74, 0.10),
-    0 0 46px rgba(15, 23, 42, 0.05);
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(140deg, color-mix(in srgb, var(--brand) 20%, transparent), transparent 34%),
+    linear-gradient(-120deg, color-mix(in srgb, var(--accent) 15%, transparent), transparent 42%);
+  opacity: 0.6;
 }
 
-/* Modo noche: mismo difuminado, pero verde sobre fondo oscuro */
-:root[data-theme="dark"] .hero,
-:root[data-theme="dark"] .cta,
-:root[data-theme="dark"] .featureCard {
-  box-shadow:
-    var(--shadow),
-    0 0 0 1px rgba(22, 163, 74, 0.16),
-    0 0 38px rgba(22, 163, 74, 0.14),
-    0 0 64px rgba(22, 163, 74, 0.08);
-}
-
-/*
-  El layout (2 columnas) lo maneja Bootstrap con .row + .col-lg-6.
-  Aquí solo dejamos estilos visuales del bloque.
-*/
 .heroInner {
-  /*
-    El alto del HERO lo define la caja de la imagen (16:9).
-    Así el slider “encaja” perfecto con tus imágenes home (8000x4500).
-  */
+  border-radius: calc(var(--radius-lg) - 8px);
+  overflow: hidden;
+  min-height: clamp(420px, 48vw, 580px);
+  border: 1px solid color-mix(in srgb, var(--brand) 16%, var(--border));
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
   align-items: stretch;
 }
 
-/*
-  Transición “global” del HERO.
-  Cuando cambia la imagen, también animamos la caja de texto para que se sienta sincronizado.
-*/
 .heroInner.isSwapping .heroMedia,
 .heroInner.isSwapping .heroContent {
-  animation: heroSwapFade 850ms ease;
+  animation: heroSwapFade 760ms ease;
 }
 
 @keyframes heroSwapFade {
   from {
-    opacity: 0.92;
-    transform: translateY(4px);
+    opacity: 0.9;
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
@@ -75,55 +54,38 @@
 }
 
 .heroMedia {
-  /*
-    Caja de imagen con proporción 16:9
-    - Coincide con tus PNG (16:9), por eso ahora “encaja” sin bandas raras.
-    - `max-height` evita que el bloque quede gigante en pantallas muy altas.
-  */
   aspect-ratio: 16 / 9;
   width: 100%;
-  max-height: 560px;
-  /* Fallback para navegadores viejos o layouts raros */
-  min-height: 280px;
-  background: var(--surfaceSolid);
+  max-height: 620px;
+  min-height: 300px;
+  background:
+    linear-gradient(
+      160deg,
+      color-mix(in srgb, var(--brand-soft) 64%, var(--surface)) 0%,
+      color-mix(in srgb, var(--bg-secondary) 52%, var(--surface)) 100%
+    );
   display: grid;
   place-items: center;
   position: relative;
-  /*
-    Evita que en pantallas anchas la imagen/slider “se pase” del cuadro.
-    El HERO completo también tiene overflow:hidden, pero aquí lo aseguramos
-    a nivel del contenedor de la media.
-  */
   overflow: hidden;
 }
 
 .heroMedia img {
   width: 100%;
   height: 100%;
-  /*
-    Sin recorte (como antes):
-    - `contain` muestra la imagen completa.
-    - Puede dejar bandas arriba/abajo o a los lados, pero respeta el contenido.
-  */
   object-fit: contain;
   object-position: center;
 }
 
-/*
-  Slider del hero
-  - Las imágenes se apilan (position:absolute) y solo la activa queda visible.
-  - La transición es un fade (opacity).
-*/
 .heroSlider {
-  /*
-    Hace que el slider SIEMPRE ocupe todo el cuadro.
-    (Con height:100% + min-height a veces el % no se resuelve bien).
-  */
   position: absolute;
   inset: 0;
-
-  /* Fondo del cuadro por si carga lento la imagen */
-  background: var(--surfaceSolid);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--surface) 90%, var(--brand-soft)) 0%,
+      color-mix(in srgb, var(--bg-secondary) 64%, var(--surface)) 100%
+    );
 }
 
 .heroSlide {
@@ -135,7 +97,7 @@
   object-fit: contain;
   object-position: center;
   opacity: 0;
-  transition: opacity 800ms ease;
+  transition: opacity 760ms ease;
   will-change: opacity;
 }
 
@@ -147,53 +109,36 @@
 .heroNavBtn {
   position: absolute;
   top: 50%;
-  /*
-    Aparición/desaparición con transición:
-    - Mantiene translateY para centrar.
-    - Agrega scale para que al aparecer se sienta más suave.
-  */
   transform: translateY(-50%) scale(0.96);
   z-index: 2;
 
-  /* Botón tipo "floating" sobre la imagen */
-  box-shadow: var(--shadow);
-
-  /* Tamaño cómodo para click/tap */
   width: 44px;
   height: 44px;
   padding: 0;
   border-radius: 999px;
-
+  border-color: color-mix(in srgb, var(--brand) 24%, transparent);
+  background: color-mix(in srgb, var(--surface) 76%, transparent);
+  backdrop-filter: blur(8px);
+  box-shadow: var(--shadow-sm);
   font-size: 24px;
   line-height: 1;
 
-  /*
-    Requisito UX:
-    - Ocultos por defecto
-    - Visibles al hacer hover en la caja
-    - También visibles con teclado (focus-visible)
-  */
   opacity: 0;
   pointer-events: none;
   transition:
-    opacity 160ms ease,
-    transform 160ms ease;
+    opacity var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
 }
 
 .heroSlider:hover .heroNavBtn {
-  opacity: 0.86;
+  opacity: 0.94;
   pointer-events: auto;
   transform: translateY(-50%) scale(1);
 }
 
-/*
-  Sin mouse (táctil / teclado):
-  - Si el usuario toca dentro del slider o tabula a los botones, los mostramos.
-  - Mantiene el requisito de “ocultos” en estado idle.
-*/
 .heroSlider:active .heroNavBtn,
 .heroSlider:focus-within .heroNavBtn {
-  opacity: 0.86;
+  opacity: 0.94;
   pointer-events: auto;
   transform: translateY(-50%) scale(1);
 }
@@ -221,9 +166,9 @@
   width: 100%;
   height: 100%;
   background:
-    radial-gradient(900px 380px at 75% 15%, rgba(22, 163, 74, 0.12), transparent 62%),
-    radial-gradient(700px 320px at 20% 80%, rgba(15, 23, 42, 0.08), transparent 62%),
-    linear-gradient(180deg, var(--surfaceSolid) 0%, var(--bg) 130%);
+    radial-gradient(900px 380px at 75% 15%, color-mix(in srgb, var(--brand) 16%, transparent), transparent 62%),
+    radial-gradient(700px 320px at 20% 80%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 62%),
+    linear-gradient(180deg, var(--surface-solid) 0%, var(--bg) 130%);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -237,61 +182,148 @@
   }
 }
 
-/* El copy del hero se apoya en utilidades Bootstrap; aquí solo ajustes finos */
+.heroContent {
+  display: flex;
+  align-items: center;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--brand-soft) 56%, var(--surface)) 0%,
+      color-mix(in srgb, var(--bg-secondary) 50%, var(--surface)) 100%
+    );
+}
+
+.heroTitle {
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+
 .heroSubtitle {
   max-width: 60ch;
+  font-size: clamp(1rem, 1.5vw, 1.08rem);
+}
+
+.badgeRow .badge {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand) 12%, transparent);
 }
 
 .featureCard {
-  /* Micro-interacción típica en webs actuales */
+  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in srgb, var(--brand) 16%, var(--border));
+  overflow: hidden;
+  position: relative;
   transition:
-    transform var(--durBase) var(--easeOut),
-    border-color var(--durBase) var(--easeOut),
-    background var(--durBase) var(--easeOut);
+    transform var(--dur-base) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out),
+    background var(--dur-base) var(--ease-out);
+}
+
+.featureCard::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--brand), color-mix(in srgb, var(--accent) 72%, var(--brand)));
+  opacity: 0.9;
 }
 
 @media (hover: hover) {
   .featureCard:hover {
-    transform: translateY(-2px);
-    border-color: rgba(22, 163, 74, 0.20);
+    transform: translateY(-6px);
+    border-color: color-mix(in srgb, var(--brand) 30%, var(--border));
   }
 }
 
 .iconBubble {
-  width: 52px;
-  height: 52px;
-  border-radius: 16px;
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
   margin: 0 auto;
   display: grid;
   place-items: center;
-  background: rgba(22, 163, 74, 0.10);
-  color: var(--brand);
+  background:
+    radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--brand) 22%, transparent), transparent 58%),
+    color-mix(in srgb, var(--brand-soft) 72%, transparent);
+  color: var(--brand-strong);
+  border: 1px solid color-mix(in srgb, var(--brand) 24%, transparent);
+  box-shadow: inset 0 0 22px color-mix(in srgb, var(--brand) 16%, transparent);
 }
 
 /* Mini “stats” del hero */
 .statBox {
   border: 1px solid var(--border);
   background: var(--surface);
-  border-radius: 16px;
-  padding: 12px;
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 .statValue {
-  font-weight: 900;
+  font-family: var(--font-display);
+  font-size: clamp(1.04rem, 1.8vw, 1.18rem);
+  font-weight: 700;
   letter-spacing: -0.01em;
 }
 
 .statLabel {
   color: var(--muted);
-  font-weight: 650;
+  font-weight: 600;
   font-size: 13px;
   margin-top: 4px;
 }
 
 .cta {
-  border-radius: 18px;
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border);
   background:
-    radial-gradient(900px 260px at 50% 0%, rgba(22, 163, 74, 0.12), transparent 62%),
-    linear-gradient(180deg, var(--surfaceSolid) 0%, var(--bg) 130%);
+    radial-gradient(900px 260px at 50% 0%, color-mix(in srgb, var(--brand) 18%, transparent), transparent 62%),
+    radial-gradient(900px 260px at 90% 70%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 66%),
+    linear-gradient(180deg, var(--surface-solid) 0%, var(--bg) 130%);
+  box-shadow: var(--shadow-md), var(--shadow-glow);
+}
+
+.cta::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--brand) 8%, transparent) 0,
+    color-mix(in srgb, var(--brand) 8%, transparent) 1px,
+    transparent 1px,
+    transparent 48px
+  );
+  opacity: 0.35;
+}
+
+@media (max-width: 991.98px) {
+  .hero {
+    padding: 8px;
+  }
+
+  .heroInner {
+    min-height: auto;
+  }
+
+  .heroMedia {
+    min-height: 250px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .heroMedia {
+    aspect-ratio: 4 / 3;
+  }
+
+  .heroNavBtn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .iconBubble {
+    width: 54px;
+    height: 54px;
+  }
 }
