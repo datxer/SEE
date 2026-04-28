@@ -287,12 +287,12 @@ export default function HomePage() {
               </p>
 
               <div className="d-flex gap-2 flex-wrap">
-                {/* CTA principal -> contacto (lead) */}
-                <a href="#contacto" className="btn btn-success btn-lg">
+                {/* CTA principal -> WhatsApp comercial. Es el botón más importante de la pantalla. */}
+                <a href="https://wa.me/5352797280" className="btn btn-success btn-lg" target="_blank" rel="noopener noreferrer">
                   Solicitar Asesoría
                 </a>
 
-                {/* CTA secundaria -> servicios */}
+                {/* CTA secundaria -> ruta interna de servicios */}
                 <Link to="/servicios" className="btn btn-outline-success btn-lg">
                   Ver servicios
                 </Link>

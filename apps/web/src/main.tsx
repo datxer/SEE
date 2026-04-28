@@ -16,6 +16,8 @@ import './styles/global.css'
   Nota: React.StrictMode en desarrollo ayuda a detectar efectos secundarios.
 */
 
+// Este es el punto de arranque de toda la interfaz.
+// Si piensas en la app como una casa, este archivo es la puerta principal.
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>

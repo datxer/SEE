@@ -8,9 +8,11 @@ type Theme = 'light' | 'dark'
 const THEME_STORAGE_KEY = 'see:theme'
 
 function getInitialTheme(): Theme {
+  // Primero miramos si el usuario ya eligió un tema antes.
   const saved = localStorage.getItem(THEME_STORAGE_KEY)
   if (saved === 'light' || saved === 'dark') return saved
 
+  // Si nunca eligió, usamos la preferencia del sistema operativo.
   const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)')?.matches
   return prefersDark ? 'dark' : 'light'
 }
@@ -35,12 +37,23 @@ export default function Layout() {
       - data-theme: lo seguimos usando para tus variables propias.
       - data-bs-theme: Bootstrap 5.3 lo usa para adaptar colores internos.
     */
+    // Cada vez que cambia el tema, lo guardamos en el documento y en localStorage.
     document.documentElement.dataset.theme = theme
     document.documentElement.dataset.bsTheme = theme
     localStorage.setItem(THEME_STORAGE_KEY, theme)
   }, [theme])
 
   useEffect(() => {
+    /*
+      Cuando cambia la ruta, hacemos dos cosas:
+      1) mandamos la vista arriba del todo
+      2) reactivamos las animaciones reveal para el contenido nuevo
+
+      Esto evita que, al navegar desde el footer u otra zona baja,
+      la nueva página aparezca “a media altura” y confunda al usuario.
+    */
+    window.scrollTo(0, 0)
+
     /*
       Animaciones de aparición (reveal)
       - Se re-ejecuta en cada cambio de ruta porque el contenido del <Outlet /> cambia.
@@ -68,7 +81,7 @@ export default function Layout() {
       <header className="siteHeader sticky-top border-bottom">
         <nav className="navbar navbar-expand-lg">
           <div className="container-xxl py-3">
-            {/* Marca: logo + nombre */}
+            {/* Marca: logo + nombre. Sirve para volver al inicio desde cualquier parte. */}
             <Link to="/" className="navbar-brand brand" aria-label="Ir al inicio" onClick={() => setIsNavOpen(false)}>
               <img
                 className="brandLogo"
@@ -96,6 +109,7 @@ export default function Layout() {
 
             <div id="siteNav" className={isNavOpen ? 'collapse navbar-collapse show' : 'collapse navbar-collapse'}>
               <div className="navbar-nav ms-auto gap-1 navPills" aria-label="Navegación principal">
+                {/* Cada NavLink cambia su estilo solo si la ruta está activa */}
                 <NavLink
                   to="/"
                   end
@@ -152,6 +166,7 @@ export default function Layout() {
       </header>
 
       <main id="main" className="main container-xxl flex-fill py-5">
+        {/* Outlet = el hueco donde React Router coloca la página actual */}
         <Outlet />
       </main>
 
@@ -166,19 +181,23 @@ export default function Layout() {
                 - mailto/tel son un estándar en webs actuales (móvil-friendly).
                 - Datos tomados de la presentación de la empresa.
               */}
+                {/* Email: abre el cliente de correo del usuario */}
                 <a className="text-body-secondary" href="mailto:ismaray@cedai.com.cu">
                   Email: ismaray@cedai.com.cu
                 </a>
+                {/* WhatsApp del director general */}
                 <a className="text-body-secondary" href="https://wa.me/5352798676"
                    target="_blank" 
                    rel="noopener noreferrer">
                   Director general: +53 52798676
                 </a>
+                {/* WhatsApp del director comercial */}
                 <a className="text-body-secondary" href="https://wa.me/5352797280"
                    target="_blank" 
                   rel="noopener noreferrer">
                   Director comercial: +53 52797280
                 </a>
+                {/* Dirección física de la empresa */}
                 <div className="text-body-secondary">
                   Ubicación: Calle G No. 302, esq. 13, Vedado, Plaza de la Revolución, La Habana, Cuba
                 </div>

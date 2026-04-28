@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom'
+import CallToAction from '../components/CallToAction'
+import PageIntro from '../components/PageIntro'
 
 export default function AboutPage() {
   /*
@@ -13,55 +14,21 @@ export default function AboutPage() {
   */
   return (
     <div className="vstack gap-5">
-      <header
-        className="p-4 p-lg-5 rounded-4 border bg-body-tertiary shadow-sm"
-        aria-label="Encabezado de Nosotros"
-        data-reveal
-      >
-        <div className="d-inline-flex gap-2 flex-wrap" aria-label="Etiquetas">
-          <span className="badge bg-success-subtle text-success-emphasis border border-success-subtle">SEE</span>
-          <span className="badge text-bg-secondary">Energía renovable</span>
-          <span className="badge text-bg-secondary">Calidad</span>
-        </div>
-
-        <h1 className="display-6 fw-bold mt-3 mb-2">Nosotros</h1>
-        <p className="text-body-secondary mb-0" style={{ maxWidth: 820 }}>
-          Soluciones Energéticamente Eficientes (SEE) es una mediana empresa que ofrece servicios especializados en
-          soluciones sostenibles y sustentables. Nos enfocamos en ingeniería, elaboración de proyectos técnicos y
-          ejecutivos, asistencia técnica y consultoría en eficiencia energética y energías renovables.
-        </p>
-
-        {/*
-          KPIs (texto corto) ayudan a dar confianza.
-          Son placeholders: cambia números por tus datos reales cuando quieras.
-        */}
-        <div className="row g-3 mt-3" aria-label="Indicadores">
-          <div className="col-12 col-md-4">
-            <div className="card h-100 shadow-sm">
-              <div className="card-body text-center">
-                <div className="fw-bold">2400 kWp</div>
-                <div className="text-body-secondary small mt-1">FV instalados</div>
-              </div>
-            </div>
-          </div>
-          <div className="col-12 col-md-4">
-            <div className="card h-100 shadow-sm">
-              <div className="card-body text-center">
-                <div className="fw-bold">298</div>
-                <div className="text-body-secondary small mt-1">Revisiones energéticas</div>
-              </div>
-            </div>
-          </div>
-          <div className="col-12 col-md-4">
-            <div className="card h-100 shadow-sm">
-              <div className="card-body text-center">
-                <div className="fw-bold">3.7 GWh/año</div>
-                <div className="text-body-secondary small mt-1">Ahorro estimado</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/*
+        Este bloque se repite en otras páginas, así que lo convertimos en un componente.
+        La página solo le pasa texto y métricas; el componente se encarga de pintarlo.
+      */}
+      <PageIntro
+        ariaLabel="Encabezado de Nosotros"
+        badges={['SEE', 'Energía renovable', 'Calidad']}
+        title="Nosotros"
+        description="Soluciones Energéticamente Eficientes (SEE) es una mediana empresa que ofrece servicios especializados en soluciones sostenibles y sustentables. Nos enfocamos en ingeniería, elaboración de proyectos técnicos y ejecutivos, asistencia técnica y consultoría en eficiencia energética y energías renovables."
+        metrics={[
+          { value: '2400 kWp', label: 'FV instalados' },
+          { value: '298', label: 'Revisiones energéticas' },
+          { value: '3.7 GWh/año', label: 'Ahorro estimado' },
+        ]}
+      />
 
       <section aria-label="Misión, visión y valores" data-reveal>
         <h2 className="h3 mb-3">¿Dónde vamos?</h2>
@@ -128,22 +95,13 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section
-        className="p-4 p-lg-5 rounded-4 border bg-body-tertiary text-center"
-        aria-label="Llamado a la acción"
-        data-reveal
-      >
-        <h2 className="h3 m-0">¿Listo para dar el siguiente paso?</h2>
-        <p className="text-body-secondary mt-2 mb-4">Cuéntanos tu caso y te orientamos con una asesoría inicial.</p>
-        <div className="d-flex gap-2 justify-content-center flex-wrap">
-          <a className="btn btn-success btn-lg" href="#contacto">
-            Solicitar asesoría
-          </a>
-          <Link className="btn btn-outline-success btn-lg" to="/servicios">
-            Ver servicios
-          </Link>
-        </div>
-      </section>
+      <CallToAction
+        title="¿Listo para dar el siguiente paso?"
+        description="Cuéntanos tu caso y te orientamos con una asesoría inicial."
+        // Este CTA lleva directo al chat de WhatsApp del área comercial.
+        primaryAction={{ label: 'Solicitar asesoría', to: 'https://wa.me/5352797280', external: true }}
+        secondaryAction={{ label: 'Ver servicios', to: '/servicios' }}
+      />
     </div>
   )
 }
