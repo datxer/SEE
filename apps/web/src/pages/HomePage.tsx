@@ -288,7 +288,10 @@ export default function HomePage() {
 
               <div className="d-flex gap-2 flex-wrap">
                 {/* CTA principal -> contacto (lead) */}
-                <a href="#contacto" className="btn btn-success btn-lg">
+                <a href="https://wa.me/5352797280"
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   className="btn btn-success btn-lg" >
                   Solicitar Asesoría
                 </a>
 
