@@ -151,7 +151,9 @@ export default function ProjectsPage() {
         <h2 className="h3 m-0">¿Quieres que tu proyecto sea el próximo?</h2>
         <p className="text-body-secondary mt-2 mb-4">Te ayudamos a elegir la mejor configuración según tu consumo.</p>
         <div className="d-flex gap-2 justify-content-center flex-wrap">
-          <a className="btn btn-success btn-lg" href="#contacto">
+          <a className="btn btn-success btn-lg" href="https://wa.me/5352798676"
+             target="_blank" 
+             rel="noopener noreferrer">
             Hablar con un asesor
           </a>
           <Link className="btn btn-outline-success btn-lg" to="/servicios">

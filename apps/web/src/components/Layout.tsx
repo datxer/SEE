@@ -169,10 +169,14 @@ export default function Layout() {
                 <a className="text-body-secondary" href="mailto:ismaray@cedai.com.cu">
                   Email: ismaray@cedai.com.cu
                 </a>
-                <a className="text-body-secondary" href="tel:+5352798676">
+                <a className="text-body-secondary" href="https://wa.me/5352798676"
+                   target="_blank" 
+                   rel="noopener noreferrer">
                   Director general: +53 52798676
                 </a>
-                <a className="text-body-secondary" href="tel:+5352797280">
+                <a className="text-body-secondary" href="https://wa.me/5352797280"
+                   target="_blank" 
+                  rel="noopener noreferrer">
                   Director comercial: +53 52797280
                 </a>
                 <div className="text-body-secondary">
