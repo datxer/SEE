@@ -1,6 +1,6 @@
 # Proyecto Web CEDAI
 
-Este repo tiene **2 apps**: un **frontend** (React + Vite) y un **backend** (Rust + Rocket).
+Este repo tiene **2 apps**: un **frontend** (React + Vite) y un **backend** (Express + Node.js).
 
 ## Estructura
 
@@ -15,19 +15,20 @@ Este repo tiene **2 apps**: un **frontend** (React + Vite) y un **backend** (Rus
   - `vite.config.ts` → config de Vite; incluye proxy `/api` → `http://localhost:8000` en DEV.
 
 - `apps/api/` → Backend (API)
-  - `src/main.rs` → entrypoint de Rocket (monta `/api` + CORS).
-  - `src/routes/` → endpoints (por ahora `health`).
-  - `src/cors.rs` → middleware de CORS (headers para permitir requests desde el frontend).
+  - `src/index.js` → servidor principal de Express.
+  - `src/routes/` → endpoints de proyectos y uploads.
+  - `src/middleware/` → autenticación simple por token de admin.
+  - `src/utils/` → lectura y escritura del JSON de proyectos.
 
 ## Cómo correr en desarrollo
 
-### 1) Backend (Rocket)
+### 1) Backend (Express)
 
 En una terminal:
 
 ```bash
 cd apps/api
-cargo run
+npm run dev
 ```
 
 Luego prueba:

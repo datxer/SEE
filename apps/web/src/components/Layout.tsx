@@ -51,8 +51,16 @@ export default function Layout() {
 
       Esto evita que, al navegar desde el footer u otra zona baja,
       la nueva página aparezca “a media altura” y confunda al usuario.
+
+      Nota: usamos requestAnimationFrame para garantizar que el scroll ocurra
+      DESPUÉS de que React haya renderizado todo el contenido nuevo.
+      Esto evita que a veces la página aparezca a media altura.
     */
-    window.scrollTo(0, 0)
+    requestAnimationFrame(() => {
+      window.scrollTo(0, 0)
+      // También cierro el menú si estaba abierto, para mejor UX
+      setIsNavOpen(false)
+    })
 
     /*
       Animaciones de aparición (reveal)
@@ -207,7 +215,12 @@ export default function Layout() {
 
           <div className="footerNote d-flex justify-content-between gap-2 flex-wrap text-body-secondary fw-semibold">
             <span>Soluciones Energéticamente Eficientes</span>
-            <span>© {new Date().getFullYear()}</span>
+            <div className="d-flex align-items-center gap-3 flex-wrap">
+              <a className="text-body-secondary small fw-semibold" href="/admin">
+                Área interna
+              </a>
+              <span>© {new Date().getFullYear()}</span>
+            </div>
           </div>
         </div>
       </footer>

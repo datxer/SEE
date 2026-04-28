@@ -1,3 +1,5 @@
+import './PageIntro.css'
+
 type PageIntroMetric = {
   value: string
   label: string
@@ -29,7 +31,7 @@ export default function PageIntro({ ariaLabel, badges, title, description, metri
       {/* Título principal de la página */}
       <h1 className="display-6 fw-bold mt-3 mb-2">{title}</h1>
       {/* Texto que explica rápido de qué va la página */}
-      <p className="text-body-secondary mb-0" style={{ maxWidth: 820 }}>
+      <p className="text-body-secondary mb-0 pageIntroDescription">
         {description}
       </p>
 
