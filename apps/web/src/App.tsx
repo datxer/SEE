@@ -4,6 +4,7 @@ import HomePage from './pages/HomePage'
 import AboutPage from './pages/AboutPage'
 import ServicesPage from './pages/ServicesPage'
 import ProjectsPage from './pages/ProjectsPage'
+import AdminPage from './pages/AdminPage'
 
 export default function App() {
   // Router de la app (React Router)
@@ -22,6 +23,9 @@ export default function App() {
         <Route path="/nosotros" element={<AboutPage />} />
         {/* Página de proyectos: muestra ejemplos o casos */}
         <Route path="/proyectos" element={<ProjectsPage />} />
+
+        {/* Panel de administración (protegido con contraseña) */}
+        <Route path="/admin" element={<AdminPage />} />
 
         {/* Fallback: si no existe la ruta, volvemos al inicio */}
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,0 +1,10 @@
+/*
+  Componente PageIntro
+  - Header reutilizable con badges, título y descripción.
+  - Estilos para mantener coherencia visual en todas las páginas.
+*/
+
+/* Limitador de ancho para la descripción principal */
+.pageIntroDescription {
+  max-width: 820px;
+}

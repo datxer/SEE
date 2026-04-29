@@ -1,6 +1,9 @@
 import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import CallToAction from '../components/CallToAction'
 import PageIntro from '../components/PageIntro'
+import ProjectGalleryModal from '../components/ProjectGalleryModal'
+import './ProjectsPage.css'
 
 export default function ProjectsPage() {
   /*
@@ -9,57 +12,35 @@ export default function ProjectsPage() {
     Propósito:
     - Portafolio / casos de éxito.
 
-    Estado actual:
-    - Placeholder simple.
-    - Más adelante puede incluir:
-      - galería de proyectos,
-      - fichas con fotos + descripción,
-      - filtros básicos (si los necesitas),
-      - datos que vengan de la API.
+    Cambios recientes:
+    - Cada proyecto ahora tiene múltiples fotos en un array.
+    - Al hacer clic en una tarjeta, se abre un modal con slider de fotos.
   */
+  // Este state guarda cuál proyecto tiene su galería abierta (null si ninguno).
+  // Así sabemos a quién mostrar el modal.
+  const [selectedProjectIndex, setSelectedProjectIndex] = useState<number | null>(null)
   /*
     Nota sobre imágenes:
     - Reutilizo assets que ya existen en /public para que se vea bien hoy.
     - Cuando tengas fotos reales de proyectos, solo cambia los src.
   */
-  const items = [
-    {
-      title: 'TABACUBA',
-      body: 'Sistemas fotovoltaicos e iniciativas de eficiencia energética para instalaciones productivas.',
-      src: '/home_1.png',
-      alt: 'Proyecto TABACUBA (imagen de referencia)',
-    },
-    {
-      title: 'FAO',
-      body: 'Implementaciones en energías renovables y soporte técnico asociado.',
-      src: '/home_2.png',
-      alt: 'Proyecto FAO (imagen de referencia)',
-    },
-    {
-      title: 'CEDAI / 3xE',
-      body: 'Proyectos de energía renovable y eficiencia energética (casos de referencia).',
-      src: '/logo.jpg',
-      alt: 'Proyecto CEDAI / 3xE (imagen de referencia)',
-    },
-    {
-      title: 'Desalinizadora Las Mangas',
-      body: 'Soluciones vinculadas a tratamiento de agua y soporte técnico.',
-      src: '/logo.svg',
-      alt: 'Proyecto Desalinizadora Las Mangas (imagen de referencia)',
-    },
-    {
-      title: 'Aguas de La Habana',
-      body: 'Asistencia técnica y proyectos asociados a operación eficiente.',
-      src: '/home_1.png',
-      alt: 'Proyecto Aguas de La Habana (imagen de referencia)',
-    },
-    {
-      title: 'TRANSTUR Comunicaciones',
-      body: 'Servicios técnicos e integración eléctrica según requerimientos del cliente.',
-      src: '/home_2.png',
-      alt: 'Proyecto TRANSTUR Comunicaciones (imagen de referencia)',
-    },
-  ]
+  // Los proyectos se cargan desde la API pública en /api/projects
+  const [items, setItems] = useState<any[]>([])
+  useEffect(() => {
+    let mounted = true
+    fetch('/api/projects')
+      .then((r) => r.json())
+      .then((d) => {
+        if (mounted) setItems(d)
+      })
+      .catch(() => {
+        // Si falla la petición, dejamos un array vacío y mostramos mensaje en UI
+        if (mounted) setItems([])
+      })
+    return () => {
+      mounted = false
+    }
+  }, [])
 
   return (
     <div className="vstack gap-5">
@@ -93,12 +74,35 @@ export default function ProjectsPage() {
         <div className="row g-3 mt-1">
           {items.map((it) => (
             <div key={it.title} className="col-12 col-md-4">
-              <article className="card h-100 shadow-sm overflow-hidden">
-                <img className="card-img-top" src={it.src} alt={it.alt} loading="lazy" />
+              {/*
+                Ahora cada tarjeta es clickeable. Al hacer clic, guardamos su índice
+                y abrimos el modal con sus fotos.
+              */}
+              <article
+                className="card h-100 shadow-sm overflow-hidden projectCard"
+                role="button"
+                tabIndex={0}
+                onClick={() => setSelectedProjectIndex(items.indexOf(it))}
+                onKeyDown={(e) => {
+                  // Si presionas Enter o Espacio sobre la tarjeta, también abre la galería.
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    setSelectedProjectIndex(items.indexOf(it))
+                  }
+                }}
+                aria-label={`Ver galería de ${it.title}`}
+              >
+                {/* La foto de portada (thumbnail) de la tarjeta */}
+                <img
+                  className="card-img-top"
+                  src={it.thumbnail || (it.photos && it.photos[0] ? (typeof it.photos[0] === 'string' ? it.photos[0] : it.photos[0].url) : '/home_1.png')}
+                  alt={it.thumbnailAlt || (it.photos && it.photos[0] ? (typeof it.photos[0] === 'string' ? '' : it.photos[0].alt || '') : it.title)}
+                  loading="lazy"
+                />
                 <div className="card-body">
                   <h3 className="h6">{it.title}</h3>
                   <p className="text-body-secondary">{it.body}</p>
-                  <div className="d-flex flex-wrap gap-2" aria-label="Etiquetas">
+                  {/* Pequeño indicador para que el usuario sepa que es clickeable */}
+                  <div className="d-flex flex-wrap gap-2 align-items-center" aria-label="Etiquetas y acciones">
                     <span className="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle">
                       Solar
                     </span>
@@ -108,6 +112,10 @@ export default function ProjectsPage() {
                     <span className="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle">
                       Calidad
                     </span>
+                    {/* Pequeño indicador visual de que hay fotos (ej: "📷 3 fotos") */}
+                    <small className="text-muted ms-auto">
+                      📷 {Array.isArray(it.photos) ? it.photos.length : 0}
+                    </small>
                   </div>
                 </div>
               </article>
@@ -115,6 +123,18 @@ export default function ProjectsPage() {
           ))}
         </div>
       </section>
+
+      {/*
+        Si algún proyecto está seleccionado (selectedProjectIndex no es null),
+        mostramos el modal con sus fotos.
+      */}
+      {selectedProjectIndex !== null && (
+        <ProjectGalleryModal
+          projectTitle={items[selectedProjectIndex].title}
+          photos={Array.isArray(items[selectedProjectIndex].photos) ? items[selectedProjectIndex].photos.map((p: any) => (typeof p === 'string' ? p : p.url)) : []}
+          onClose={() => setSelectedProjectIndex(null)}
+        />
+      )}
 
       <CallToAction
         title="¿Quieres que tu proyecto sea el próximo?"

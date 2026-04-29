@@ -1,0 +1,23 @@
+/*
+  Página de Proyectos
+  - Estilos para tarjetas interactivas de galería de proyectos.
+  - Animaciones y estados de interacción.
+*/
+
+/* Tarjeta de proyecto clickeable */
+.projectCard {
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Efecto hover al pasar el mouse sobre la tarjeta */
+.projectCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Efecto al enfocar con teclado (accesibilidad) */
+.projectCard:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}

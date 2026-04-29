@@ -9,8 +9,8 @@ export async function fetchHealth(): Promise<HealthResponse> {
     Llamada simple a la API.
 
     Importante:
-    - Usamos '/api/...' (ruta relativa) para que en DEV Vite lo proxyee a Rocket
-      (ver vite.config.ts), y en PROD puedas configurar el servidor para servir
+    - Usamos '/api/...' (ruta relativa) para que en DEV Vite lo proxyee al backend
+      Express (ver vite.config.ts), y en PROD puedas configurar el servidor para servir
       frontend y backend bajo el mismo dominio.
   */
   const res = await fetch('/api/health', {
