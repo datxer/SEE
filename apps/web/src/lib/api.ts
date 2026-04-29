@@ -26,5 +26,6 @@ export async function fetchHealth(): Promise<HealthResponse> {
   }
 
   // Parseo explícito a JSON y casteo al tipo esperado.
+  // Aquí solo hacemos la llamada; mostrar el dato en pantalla lo hace otro componente.
   return (await res.json()) as HealthResponse
 }

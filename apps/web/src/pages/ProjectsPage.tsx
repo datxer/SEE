@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom'
+import CallToAction from '../components/CallToAction'
+import PageIntro from '../components/PageIntro'
 
 export default function ProjectsPage() {
   /*
@@ -61,50 +63,21 @@ export default function ProjectsPage() {
 
   return (
     <div className="vstack gap-5">
-      <header
-        className="p-4 p-lg-5 rounded-4 border bg-body-tertiary shadow-sm"
-        aria-label="Encabezado de Proyectos"
-        data-reveal
-      >
-        <div className="d-inline-flex gap-2 flex-wrap" aria-label="Etiquetas">
-          <span className="badge bg-success-subtle text-success-emphasis border border-success-subtle">Portafolio</span>
-          <span className="badge text-bg-secondary">Residencial</span>
-          <span className="badge text-bg-secondary">Comercial</span>
-        </div>
-
-        <h1 className="display-6 fw-bold mt-3 mb-2">Proyectos</h1>
-        <p className="text-body-secondary mb-0" style={{ maxWidth: 820 }}>
-          Casos y referencias mencionadas en la presentación de SEE. Puedes reemplazar cada imagen por una foto real
-          del proyecto cuando quieras.
-        </p>
-
-        <div className="row g-3 mt-3" aria-label="Indicadores">
-          <div className="col-12 col-md-4">
-            <div className="card h-100 shadow-sm">
-              <div className="card-body text-center">
-                <div className="fw-bold">Residencial</div>
-                <div className="text-body-secondary small mt-1">Hogares y pequeñas instalaciones</div>
-              </div>
-            </div>
-          </div>
-          <div className="col-12 col-md-4">
-            <div className="card h-100 shadow-sm">
-              <div className="card-body text-center">
-                <div className="fw-bold">Comercial</div>
-                <div className="text-body-secondary small mt-1">Negocios y oficinas</div>
-              </div>
-            </div>
-          </div>
-          <div className="col-12 col-md-4">
-            <div className="card h-100 shadow-sm">
-              <div className="card-body text-center">
-                <div className="fw-bold">Soporte</div>
-                <div className="text-body-secondary small mt-1">Mantenimiento y optimización</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/*
+        Misma idea: el contenido cambia, la estructura se reutiliza.
+        Eso reduce repetición y hace más fácil mantener el diseño.
+      */}
+      <PageIntro
+        ariaLabel="Encabezado de Proyectos"
+        badges={['Portafolio', 'Residencial', 'Comercial']}
+        title="Proyectos"
+        description="Casos y referencias mencionadas en la presentación de SEE. Puedes reemplazar cada imagen por una foto real del proyecto cuando quieras."
+        metrics={[
+          { value: 'Residencial', label: 'Hogares y pequeñas instalaciones' },
+          { value: 'Comercial', label: 'Negocios y oficinas' },
+          { value: 'Soporte', label: 'Mantenimiento y optimización' },
+        ]}
+      />
 
       <section aria-label="Galería de proyectos" data-reveal>
         <div className="d-flex align-items-end justify-content-between gap-3 flex-wrap">
@@ -143,24 +116,12 @@ export default function ProjectsPage() {
         </div>
       </section>
 
-      <section
-        className="p-4 p-lg-5 rounded-4 border bg-body-tertiary text-center"
-        aria-label="Llamado a la acción"
-        data-reveal
-      >
-        <h2 className="h3 m-0">¿Quieres que tu proyecto sea el próximo?</h2>
-        <p className="text-body-secondary mt-2 mb-4">Te ayudamos a elegir la mejor configuración según tu consumo.</p>
-        <div className="d-flex gap-2 justify-content-center flex-wrap">
-          <a className="btn btn-success btn-lg" href="https://wa.me/5352798676"
-             target="_blank" 
-             rel="noopener noreferrer">
-            Hablar con un asesor
-          </a>
-          <Link className="btn btn-outline-success btn-lg" to="/servicios">
-            Ver servicios
-          </Link>
-        </div>
-      </section>
+      <CallToAction
+        title="¿Quieres que tu proyecto sea el próximo?"
+        description="Te ayudamos a elegir la mejor configuración según tu consumo."
+        primaryAction={{ label: 'Hablar con un asesor', to: 'https://wa.me/5352798676', external: true }}
+        secondaryAction={{ label: 'Ver servicios', to: '/servicios' }}
+      />
     </div>
   )
 }

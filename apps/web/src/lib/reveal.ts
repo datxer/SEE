@@ -57,6 +57,7 @@ export function setupRevealOnScroll(): RevealCleanup {
 
   const observer = new IntersectionObserver(
     (entries) => {
+      // Cada vez que un bloque entra en pantalla, le marcamos que ya se puede mostrar.
       for (const entry of entries) {
         if (!entry.isIntersecting) continue
         const el = entry.target as HTMLElement
