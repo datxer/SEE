@@ -22,7 +22,7 @@ export default function PageIntro({ ariaLabel, badges, title, description, metri
   // Así cambias el contenido una sola vez por página, pero no repites el mismo HTML.
   // Piensa en él como una “caja” que ya trae la forma lista.
   return (
-    <header className="p-4 p-lg-5 rounded-4 border bg-body-tertiary shadow-sm" aria-label={ariaLabel} data-reveal>
+    <header className="pageIntro p-4 p-lg-5 rounded-4 border bg-body-tertiary shadow-sm" aria-label={ariaLabel} data-reveal>
       {/* Las badges son pequeñas etiquetas que resumen de qué trata la página */}
       <div className="d-inline-flex gap-2 flex-wrap" aria-label="Etiquetas">
         {badges.map((badge) => (
