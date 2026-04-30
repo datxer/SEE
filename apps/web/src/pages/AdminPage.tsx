@@ -3,8 +3,10 @@ import PageIntro from '../components/PageIntro'
 
 type Photo = {
   id: string
+  // URL pública devuelta por el backend (ej: "/uploads/archivo.jpg").
+  // Se usa para renderizar la imagen y como identificador lógico para la portada.
   url: string
-  alt?: string
+  alt: string
   order: number
 }
 
@@ -59,6 +61,116 @@ export default function AdminPage() {
   const [authState, setAuthState] = useState<AuthState>(() => (token ? 'checking' : 'signed-out'))
   const [authError, setAuthError] = useState('')
 
+  const [expandedProjectId, setExpandedProjectId] = useState<string | null>(null);
+
+  // --- Estadísticas (editable por admin) ---
+  // Usamos strings en los inputs para permitir escribir/editar sin que React “rebote”
+  // el valor a 0 cuando el campo queda temporalmente vacío.
+  const [statisticsDraft, setStatisticsDraft] = useState({
+    fv_instalados: '0',
+    revisiones_energeticas: '0',
+    estaciones_carga: '0',
+    ahorro_estimado_anual: '0'
+  })
+  const [statisticsError, setStatisticsError] = useState('')
+  const [statisticsLoading, setStatisticsLoading] = useState(false)
+
+  function applyStatisticsToDraft(nextStatistics: {
+    fv_instalados?: number
+    revisiones_energeticas?: number
+    estaciones_carga?: number
+    ahorro_estimado_anual?: number
+  }) {
+    setStatisticsDraft({
+      fv_instalados: String(nextStatistics.fv_instalados ?? 0),
+      revisiones_energeticas: String(nextStatistics.revisiones_energeticas ?? 0),
+      estaciones_carga: String(nextStatistics.estaciones_carga ?? 0),
+      ahorro_estimado_anual: String(nextStatistics.ahorro_estimado_anual ?? 0)
+    })
+  }
+
+  async function fetchStatistics() {
+    setStatisticsError('')
+    setStatisticsLoading(true)
+
+    try {
+      const res = await fetch('/api/statistics')
+      const bodyText = await res.text()
+      const data = bodyText ? JSON.parse(bodyText) : {}
+
+      if (!res.ok) {
+        const message = typeof data?.error === 'string' ? data.error : `Error HTTP ${res.status}`
+        setStatisticsError(message)
+        return
+      }
+
+      applyStatisticsToDraft(data)
+    } catch (err) {
+      console.error('Error fetching statistics:', err)
+      setStatisticsError('No se pudieron cargar las estadísticas.')
+    } finally {
+      setStatisticsLoading(false)
+    }
+  }
+
+  function parseStatisticsDraft() {
+    // Normaliza strings → numbers. Si el campo está vacío, lo tomamos como 0.
+    // Si el valor no es un número, devolvemos null y mostramos un error.
+    const entries = Object.entries(statisticsDraft) as Array<[keyof typeof statisticsDraft, string]>
+    const parsed: Record<string, number> = {}
+
+    for (const [key, value] of entries) {
+      const trimmed = value.trim()
+      const asNumber = trimmed === '' ? 0 : Number(trimmed)
+
+      if (!Number.isFinite(asNumber)) {
+        return { ok: false as const, error: `El campo "${key}" no es un número válido.` }
+      }
+
+      parsed[key] = asNumber
+    }
+
+    return { ok: true as const, value: parsed }
+  }
+
+  async function updateStatistics() {
+    setStatisticsError('')
+
+    const parsed = parseStatisticsDraft()
+    if (!parsed.ok) {
+      setStatisticsError(parsed.error)
+      return
+    }
+
+    try {
+      const res = await fetch('/api/statistics', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          // Usamos el token del estado (es el que valida el panel).
+          'x-admin-token': token || ''
+        },
+        body: JSON.stringify(parsed.value)
+      })
+
+      const bodyText = await res.text()
+      const data = bodyText ? JSON.parse(bodyText) : {}
+
+      if (!res.ok) {
+        const message = typeof data?.error === 'string' ? data.error : `Error HTTP ${res.status}`
+        setStatisticsError(message)
+        console.error('Error updating statistics:', { status: res.status, data })
+        return
+      }
+
+      applyStatisticsToDraft(data)
+      alert('Estadísticas actualizadas correctamente')
+    } catch (err) {
+      console.error('Error updating statistics:', err)
+      setStatisticsError('Error al actualizar las estadísticas.')
+    }
+  }
+
   useEffect(() => {
     let cancelled = false
 
@@ -97,6 +209,7 @@ export default function AdminPage() {
           setAuthError('')
           setAuthState('signed-in')
           await fetchProjects()
+          await fetchStatistics()
         }
       } catch (err) {
         console.error(err)
@@ -367,6 +480,10 @@ export default function AdminPage() {
     }))
   }
 
+  const toggleProjectPhotos = (projectId: string) => {
+    setExpandedProjectId((current) => (current === projectId ? null : projectId));
+  };
+
   if (authState === 'checking') {
     return (
       <div className="vstack gap-4">
@@ -447,95 +564,38 @@ export default function AdminPage() {
                 <div key={project.id} className="col-12 col-xl-6">
                   <div className="card shadow-sm border-0 p-3 h-100">
                     <div className="card-body p-0">
-                      <h3 className="h6 mb-3">Editar proyecto</h3>
+                      <h3 className="h6 mb-3">{project.title}</h3>
+                      <button
+                        className="btn btn-outline-primary mb-3"
+                        onClick={() => toggleProjectPhotos(project.id)}
+                      >
+                        {expandedProjectId === project.id ? 'Ocultar fotos' : 'Editar fotos'}
+                      </button>
 
-                      <div className="mb-2">
-                        <label className="form-label">Título</label>
-                        <input
-                          className="form-control"
-                          value={drafts[project.id]?.title ?? project.title}
-                          onChange={(e) => setDrafts((currentDrafts) => ({
-                            ...currentDrafts,
-                            [project.id]: {
-                              ...(currentDrafts[project.id] ?? createProjectDraft(project)),
-                              title: e.target.value
-                            }
-                          }))}
-                        />
-                      </div>
+                      {expandedProjectId === project.id && (
+                        <div className="vstack gap-3">
+                          <p className="text-body-secondary small mb-3">
+                            <strong>Descripción:</strong> {project.body}
+                          </p>
+                          {project.photos
+                            .slice()
+                            .sort((leftPhoto, rightPhoto) => leftPhoto.order - rightPhoto.order)
+                            .map((photo) => {
+                              // Tomamos el borrador para que el admin pueda escribir sin que el input “rebote”.
+                              // Si por algún motivo no existe el borrador (caso borde), armamos uno con la foto actual.
+                              const draft = photoDrafts[project.id]?.[photo.id] ?? {
+                                url: photo.url,
+                                alt: photo.alt || '',
+                                order: String(photo.order),
+                                cover: (project.thumbnail || '') === photo.url
+                              }
 
-                      <div className="mb-2">
-                        <label className="form-label">Descripción</label>
-                        <textarea
-                          className="form-control"
-                          rows={4}
-                          value={drafts[project.id]?.body ?? project.body}
-                          onChange={(e) => setDrafts((currentDrafts) => ({
-                            ...currentDrafts,
-                            [project.id]: {
-                              ...(currentDrafts[project.id] ?? createProjectDraft(project)),
-                              body: e.target.value
-                            }
-                          }))}
-                        />
-                      </div>
-
-                      <div className="mb-2">
-                        <label className="form-label">Miniatura / portada</label>
-                        <input
-                          className="form-control"
-                          placeholder="/uploads/archivo.jpg"
-                          value={drafts[project.id]?.thumbnail ?? project.thumbnail ?? ''}
-                          onChange={(e) => setDrafts((currentDrafts) => ({
-                            ...currentDrafts,
-                            [project.id]: {
-                              ...(currentDrafts[project.id] ?? createProjectDraft(project)),
-                              thumbnail: e.target.value
-                            }
-                          }))}
-                        />
-                      </div>
-
-                      <div className="d-flex gap-2 flex-wrap mb-3">
-                        <button type="button" className="btn btn-primary" onClick={() => saveProject(project.id)}>
-                          Guardar cambios
-                        </button>
-                      </div>
-
-                      <div className="mb-3">
-                        <label className="form-label">Subir foto nueva</label>
-                        <input
-                          type="file"
-                          className="form-control"
-                          onChange={(e) => {
-                            const file = e.target.files && e.target.files[0]
-                            if (file) {
-                              void addPhotoToProject(project.id, file)
-                            }
-                          }}
-                        />
-                      </div>
-
-                      <p className="text-body-secondary small mb-3">Vista rápida: {project.photos.length} fotos guardadas.</p>
-
-                      <div className="vstack gap-3">
-                        {project.photos
-                          .slice()
-                          .sort((leftPhoto, rightPhoto) => leftPhoto.order - rightPhoto.order)
-                          .map((photo) => {
-                            const draft = photoDrafts[project.id]?.[photo.id] ?? {
-                              url: photo.url,
-                              alt: photo.alt || '',
-                              order: String(photo.order),
-                              cover: (project.thumbnail || '') === photo.url
-                            }
-
-                            return (
-                              <div key={photo.id} className="border rounded-3 p-3">
+                              return (
+                                <div key={photo.id} className="border rounded-3 p-3">
                                 <div className="d-flex gap-3 align-items-start flex-wrap flex-md-nowrap">
                                   <img
                                     src={draft.url}
-                                    alt={draft.alt || photo.alt || project.title}
+                                    alt={draft.alt || project.title}
                                     style={{ width: 120, height: 90, objectFit: 'cover', flexShrink: 0 }}
                                   />
 
@@ -592,13 +652,65 @@ export default function AdminPage() {
                                   </div>
                                 </div>
                               </div>
-                            )
-                          })}
-                      </div>
+                              )
+                            })}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
               ))}
+            </div>
+          </section>
+
+          <section className="card shadow-sm border-0">
+            <div className="card-body p-4 p-md-5">
+              <h2 className="h5">Editar estadísticas</h2>
+
+              {statisticsLoading ? (
+                <div className="text-body-secondary small mb-2">Cargando estadísticas...</div>
+              ) : null}
+              {statisticsError ? (
+                <div className="alert alert-danger mb-3">{statisticsError}</div>
+              ) : null}
+
+              <div className="mb-3">
+                <label className="form-label">FV Instalados</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={statisticsDraft.fv_instalados}
+                  onChange={(e) => setStatisticsDraft({ ...statisticsDraft, fv_instalados: e.target.value })}
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Revisiones Energéticas</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={statisticsDraft.revisiones_energeticas}
+                  onChange={(e) => setStatisticsDraft({ ...statisticsDraft, revisiones_energeticas: e.target.value })}
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Estaciones de Carga</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={statisticsDraft.estaciones_carga}
+                  onChange={(e) => setStatisticsDraft({ ...statisticsDraft, estaciones_carga: e.target.value })}
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Ahorro Estimado Anual</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={statisticsDraft.ahorro_estimado_anual}
+                  onChange={(e) => setStatisticsDraft({ ...statisticsDraft, ahorro_estimado_anual: e.target.value })}
+                />
+              </div>
+              <button className="btn btn-primary" onClick={updateStatistics}>Guardar cambios</button>
             </div>
           </section>
         </div>

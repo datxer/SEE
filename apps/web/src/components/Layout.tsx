@@ -1,13 +1,17 @@
+// Hooks para estado/efectos y helpers del router.
 import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import './Layout.css'
 import { setupRevealOnScroll } from '../lib/reveal'
 
+// Tema permitido en la interfaz (lo usamos para data-theme).
 type Theme = 'light' | 'dark'
 
+// Key de localStorage donde persistimos el tema.
 const THEME_STORAGE_KEY = 'see:theme'
 
 function getInitialTheme(): Theme {
+  // Decide el tema inicial (preferencia guardada o sistema).
   // Primero miramos si el usuario ya eligió un tema antes.
   const saved = localStorage.getItem(THEME_STORAGE_KEY)
   if (saved === 'light' || saved === 'dark') return saved
@@ -26,6 +30,7 @@ export default function Layout() {
     Mantener esto separado ayuda a una arquitectura limpia:
     las páginas no se preocupan por el header.
   */
+  // Estado del tema, logo y menu responsive.
   const [theme, setTheme] = useState<Theme>(() => getInitialTheme())
   const [logoFailed, setLogoFailed] = useState(false)
   const [isNavOpen, setIsNavOpen] = useState(false)
@@ -72,7 +77,9 @@ export default function Layout() {
   }, [location.pathname])
 
   // Texto del botón = acción que ocurrirá al hacer click (no el estado actual).
+  // Texto del boton que indica la accion de cambio de tema.
   const nextThemeLabel = theme === 'dark' ? 'Modo claro' : 'Modo oscuro'
+  // Ruta del logo en /public.
   const logoSrc = '/logo.jpg'
 
   return (

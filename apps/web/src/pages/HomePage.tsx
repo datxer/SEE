@@ -1,10 +1,28 @@
+// Hooks de React y links internos.
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import './HomePage.css'
 
+// Slide del hero (imagen y texto alternativo).
 type HeroSlide = {
   src: string
   alt: string
+}
+
+// Estructura de las estadisticas mostradas en el Hero.
+type Statistics = {
+  fv_instalados: number
+  revisiones_energeticas: number
+  estaciones_carga: number
+  ahorro_estimado_anual: number
+}
+
+// Valores por defecto si el backend no responde.
+const DEFAULT_STATISTICS: Statistics = {
+  fv_instalados: 2400,
+  revisiones_energeticas: 298,
+  estaciones_carga: 9,
+  ahorro_estimado_anual: 0
 }
 
 /*
@@ -134,10 +152,8 @@ function IconChart() {
 
 export default function HomePage() {
   /*
-    Esta página está pensada como Landing (información / presentación).
-    Por eso NO llamamos a la API al cargar:
-    - Evitamos que el Home muestre errores si el backend aún no está corriendo.
-    - El backend lo usaremos después para cosas reales (p.ej. formulario de contacto).
+    Esta página carga las estadísticas desde la API para reflejar los cambios del panel admin.
+    Si el backend no responde, mostramos valores por defecto (fallback) para no romper el Home.
   */
 
   /*
@@ -147,28 +163,37 @@ export default function HomePage() {
     - Si una imagen falla (archivo no existe), la marcamos como fallida y se omite.
       Esto te ayuda cuando estés cargando imágenes manualmente y te equivoques en el nombre.
   */
+  // Mapa de imagenes fallidas para esconderlas del slider.
   const [failedSlideSrcs, setFailedSlideSrcs] = useState<Record<string, true>>({})
 
+  // Recalculamos las slides disponibles solo cuando cambia el mapa de fallos.
   const availableSlides = useMemo(() => {
     return HERO_SLIDES.filter((s) => !failedSlideSrcs[s.src])
   }, [failedSlideSrcs])
 
+  // Indice de la imagen activa del slider.
   const [activeSlideIndex, setActiveSlideIndex] = useState(0)
 
   // Bandera para animar también el copy cuando cambia la imagen.
   const [isHeroSwapping, setIsHeroSwapping] = useState(false)
 
+  // Estado local de estadisticas que llegan del backend.
+  const [statistics, setStatistics] = useState<Statistics>(DEFAULT_STATISTICS)
+
   const goToPrevSlide = () => {
+    // Va a la imagen anterior (con wrap-around).
     if (availableSlides.length === 0) return
     setActiveSlideIndex((i) => (i - 1 + availableSlides.length) % availableSlides.length)
   }
 
   const goToNextSlide = () => {
+    // Va a la imagen siguiente (con wrap-around).
     if (availableSlides.length === 0) return
     setActiveSlideIndex((i) => (i + 1) % availableSlides.length)
   }
 
   useEffect(() => {
+    // Si el indice queda fuera por cambios en las slides, lo ajustamos.
     // Si cambia el set de slides disponibles (por errores), ajustamos el índice.
     if (activeSlideIndex >= availableSlides.length) setActiveSlideIndex(0)
   }, [activeSlideIndex, availableSlides.length])
@@ -198,6 +223,42 @@ export default function HomePage() {
 
     return () => window.clearInterval(intervalId)
   }, [availableSlides.length])
+
+  useEffect(() => {
+    // Carga una sola vez las estadisticas desde la API.
+    let cancelled = false
+
+    async function fetchStatistics() {
+      // Fetch simple; si falla, mantenemos el fallback.
+      try {
+        const res = await fetch('/api/statistics')
+        if (!res.ok) return
+        const data = (await res.json()) as Partial<Statistics>
+
+        if (!cancelled) {
+          setStatistics({
+            fv_instalados: Number.isFinite(data.fv_instalados) ? data.fv_instalados! : DEFAULT_STATISTICS.fv_instalados,
+            revisiones_energeticas: Number.isFinite(data.revisiones_energeticas)
+              ? data.revisiones_energeticas!
+              : DEFAULT_STATISTICS.revisiones_energeticas,
+            estaciones_carga: Number.isFinite(data.estaciones_carga) ? data.estaciones_carga! : DEFAULT_STATISTICS.estaciones_carga,
+            ahorro_estimado_anual: Number.isFinite(data.ahorro_estimado_anual)
+              ? data.ahorro_estimado_anual!
+              : DEFAULT_STATISTICS.ahorro_estimado_anual
+          })
+        }
+      } catch (err) {
+        // Si falla la API, mantenemos los valores por defecto.
+        console.error('No se pudieron cargar las estadísticas:', err)
+      }
+    }
+
+    void fetchStatistics()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   return (
     <div className="vstack gap-5">
@@ -305,19 +366,19 @@ export default function HomePage() {
               <div className="heroStats row g-2 mt-4" aria-label="Indicadores">
                 <div className="col-12 col-sm-4">
                   <div className="statBox">
-                    <div className="statValue">2400 kWp</div>
+                    <div className="statValue">{statistics.fv_instalados} kWp</div>
                     <div className="statLabel">FV instalados en el país</div>
                   </div>
                 </div>
                 <div className="col-12 col-sm-4">
                   <div className="statBox">
-                    <div className="statValue">298</div>
+                    <div className="statValue">{statistics.revisiones_energeticas}</div>
                     <div className="statLabel">Revisiones energéticas</div>
                   </div>
                 </div>
                 <div className="col-12 col-sm-4">
                   <div className="statBox">
-                    <div className="statValue">9</div>
+                    <div className="statValue">{statistics.estaciones_carga}</div>
                     <div className="statLabel">Estaciones de carga VE</div>
                   </div>
                 </div>

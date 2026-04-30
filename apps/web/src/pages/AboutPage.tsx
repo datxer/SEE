@@ -1,7 +1,27 @@
+// Hooks de React para estado/efectos.
+import { useEffect, useState } from 'react'
+// Bloques reutilizables de la web.
 import CallToAction from '../components/CallToAction'
 import PageIntro from '../components/PageIntro'
 
+// Estructura de las estadisticas que vienen desde la API.
+type Statistics = {
+  fv_instalados: number
+  revisiones_energeticas: number
+  estaciones_carga: number
+  ahorro_estimado_anual: number
+}
+
+// Fallback para que la pagina no falle si el backend no responde.
+const DEFAULT_STATISTICS: Statistics = {
+  fv_instalados: 2400,
+  revisiones_energeticas: 298,
+  estaciones_carga: 9,
+  ahorro_estimado_anual: 3.7
+}
+
 export default function AboutPage() {
+  // Renderiza el contenido estatico de la pagina Nosotros.
   /*
     Página: /nosotros
 
@@ -12,6 +32,44 @@ export default function AboutPage() {
     - Placeholder simple para que puedas reemplazar el contenido luego.
     - Usamos estilos inline mínimos para no crear CSS extra sin necesidad.
   */
+  // Guardamos las estadisticas en estado local para renderizarlas en la UI.
+  const [statistics, setStatistics] = useState<Statistics>(DEFAULT_STATISTICS)
+
+  useEffect(() => {
+    // Carga una sola vez las estadisticas desde el backend.
+    let cancelled = false
+
+    async function fetchStatistics() {
+      try {
+        const res = await fetch('/api/statistics')
+        if (!res.ok) return
+        const data = (await res.json()) as Partial<Statistics>
+
+        if (!cancelled) {
+          setStatistics({
+            fv_instalados: Number.isFinite(data.fv_instalados) ? data.fv_instalados! : DEFAULT_STATISTICS.fv_instalados,
+            revisiones_energeticas: Number.isFinite(data.revisiones_energeticas)
+              ? data.revisiones_energeticas!
+              : DEFAULT_STATISTICS.revisiones_energeticas,
+            estaciones_carga: Number.isFinite(data.estaciones_carga) ? data.estaciones_carga! : DEFAULT_STATISTICS.estaciones_carga,
+            ahorro_estimado_anual: Number.isFinite(data.ahorro_estimado_anual)
+              ? data.ahorro_estimado_anual!
+              : DEFAULT_STATISTICS.ahorro_estimado_anual
+          })
+        }
+      } catch (err) {
+        // Si falla la API, mantenemos los valores por defecto.
+        console.error('No se pudieron cargar las estadisticas:', err)
+      }
+    }
+
+    void fetchStatistics()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   return (
     <div className="vstack gap-5">
       {/*
@@ -24,9 +82,9 @@ export default function AboutPage() {
         title="Nosotros"
         description="Soluciones Energéticamente Eficientes (SEE) es una mediana empresa que ofrece servicios especializados en soluciones sostenibles y sustentables. Nos enfocamos en ingeniería, elaboración de proyectos técnicos y ejecutivos, asistencia técnica y consultoría en eficiencia energética y energías renovables."
         metrics={[
-          { value: '2400 kWp', label: 'FV instalados' },
-          { value: '298', label: 'Revisiones energéticas' },
-          { value: '3.7 GWh/año', label: 'Ahorro estimado' },
+          { value: `${statistics.fv_instalados} kWp`, label: 'FV instalados' },
+          { value: String(statistics.revisiones_energeticas), label: 'Revisiones energéticas' },
+          { value: `${statistics.ahorro_estimado_anual} GWh/año`, label: 'Ahorro estimado' },
         ]}
       />
 

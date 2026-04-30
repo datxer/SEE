@@ -1,10 +1,14 @@
+// Multer maneja uploads multipart/form-data.
 import multer from 'multer'
+// Helpers de rutas para ubicar la carpeta de uploads.
 import path from 'path'
 import { fileURLToPath } from 'url'
 import fs from 'fs'
 import { dirname } from 'path'
+// Protegemos el upload para que solo el admin suba archivos.
 import { assertAdminAuth } from '../middleware/auth.js'
 
+// Ruta real del archivo actual y su carpeta.
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
@@ -39,6 +43,7 @@ const storage = multer.diskStorage({
 
 // Solo aceptamos imágenes comunes.
 const fileFilter = (req, file, cb) => {
+  // Lista blanca de tipos permitidos para evitar archivos peligrosos.
   const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
   if (allowedMimes.includes(file.mimetype)) {
     cb(null, true)
@@ -78,6 +83,7 @@ export function uploadFile(req, res) {
       return res.status(400).json({ error: 'No se proporcionó archivo' })
     }
 
+    // La URL publica queda disponible desde /uploads/...
     const url = `/uploads/${req.file.filename}`
     res.json({ url })
   })

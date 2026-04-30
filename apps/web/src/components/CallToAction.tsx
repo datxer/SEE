@@ -1,11 +1,14 @@
+// Link de React Router para navegacion interna.
 import { Link } from 'react-router-dom'
 
+// Tipo de enlace para los botones del CTA.
 type ActionLink = {
   label: string
   to: string
   external?: boolean
 }
 
+// Props que recibe el bloque de llamado a la accion.
 type CallToActionProps = {
   title: string
   description: string
@@ -17,6 +20,7 @@ export default function CallToAction({ title, description, primaryAction, second
   // Este componente es una “plantilla” de llamado a la acción.
   // Le pasas texto y enlaces, y él se encarga de pintarlo igual en cualquier página.
   const renderAction = (action: ActionLink, className: string) => {
+    // Decide si renderizar <a> externo o <Link> interno.
     // Si la acción es externa, abrimos otra pestaña para no sacar al usuario de la web.
     if (action.external) {
       return (

@@ -1,8 +1,12 @@
+// Utilidades de filesystem en modo promesas.
 import fs from 'fs/promises'
+// Helpers de rutas para resolver el JSON en disco.
 import path from 'path'
+// Convierte import.meta.url en un path real del sistema.
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
 
+// Ruta absoluta del archivo actual y su carpeta.
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
@@ -18,6 +22,7 @@ const PROJECT_FILE = path.join(__dirname, '../../data/projects.json')
   la lectura cuando luego leemos el JSON.
 */
 function normalizePhoto(photo, fallbackOrder = 0) {
+  // Convertimos tipos y completamos campos faltantes para evitar errores en UI.
   const orderValue = Number(photo?.order)
 
   return {
@@ -37,6 +42,7 @@ function normalizePhoto(photo, fallbackOrder = 0) {
   el modelo desde cero.
 */
 function normalizeProject(project) {
+  // Ordenamos las fotos para que siempre tengan un orden consistente.
   const normalizedPhotos = Array.isArray(project?.photos)
     ? project.photos.map((photo, index) => normalizePhoto(photo, index)).sort((a, b) => a.order - b.order)
     : []
@@ -58,6 +64,7 @@ function normalizeProject(project) {
   para que la API arranque sin errores.
 */
 async function ensureFile() {
+  // Si el directorio o el archivo no existen, los creamos.
   const dir = path.dirname(PROJECT_FILE)
   try {
     await fs.access(dir)
@@ -74,6 +81,7 @@ async function ensureFile() {
 
 // Lee el JSON, lo normaliza y devuelve siempre una lista válida de proyectos.
 export async function readProjects() {
+  // Lee y normaliza el JSON; si hay error, devolvemos un array vacio.
   try {
     await ensureFile()
     const data = await fs.readFile(PROJECT_FILE, 'utf-8')
@@ -92,6 +100,7 @@ export async function readProjects() {
   el riesgo de dejar el JSON corrupto si el proceso se interrumpe a mitad.
 */
 export async function writeProjects(projects) {
+  // Persistimos los proyectos asegurando consistencia y evitando corrupcion de archivos.
   try {
     await ensureFile()
     const tempFile = PROJECT_FILE + '.tmp'

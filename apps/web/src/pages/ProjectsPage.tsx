@@ -1,3 +1,4 @@
+// Link para navegacion interna y hooks de React.
 import { Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import CallToAction from '../components/CallToAction'
@@ -6,6 +7,7 @@ import ProjectGalleryModal from '../components/ProjectGalleryModal'
 import './ProjectsPage.css'
 
 export default function ProjectsPage() {
+  // Renderiza el portafolio y su modal de galeria.
   /*
     Página: /proyectos
 
@@ -27,6 +29,7 @@ export default function ProjectsPage() {
   // Los proyectos se cargan desde la API pública en /api/projects
   const [items, setItems] = useState<any[]>([])
   useEffect(() => {
+    // Cargamos proyectos desde la API publica.
     let mounted = true
     fetch('/api/projects')
       .then((r) => r.json())

@@ -1,8 +1,26 @@
+// Generador de IDs unicos para proyectos y fotos.
 import { v4 as uuidv4 } from 'uuid'
+// Utilidades de lectura/escritura del JSON de proyectos.
 import { readProjects, writeProjects } from '../utils/fileUtils.js'
+// Middleware de autenticacion del panel admin.
 import { assertAdminAuth } from '../middleware/auth.js'
+// FS sin promesas para leer/escribir estadisticas de forma simple.
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
+import { dirname } from 'path'
+
+// Resolvemos la ruta real del modulo para ubicar el JSON.
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+// En runtime este archivo vive en: apps/api/data/statistics.json
+// Ojo: este módulo está en apps/api/src/routes, así que hay que subir 2 niveles.
+// Ruta absoluta al archivo de estadisticas.
+const statisticsPath = path.join(__dirname, '../../data/statistics.json')
 
 function resequencePhotos(photos) {
+  // Ordena las fotos por su order y reasigna un indice limpio.
   return photos
     .slice()
     .sort((leftPhoto, rightPhoto) => leftPhoto.order - rightPhoto.order)
@@ -13,6 +31,7 @@ function resequencePhotos(photos) {
 }
 
 function getNextThumbnail(currentProject, previousUrl, nextUrl, shouldCover) {
+  // Calcula la nueva miniatura cuando se edita una foto.
   if (shouldCover) {
     return nextUrl
   }
@@ -32,9 +51,11 @@ function getNextThumbnail(currentProject, previousUrl, nextUrl, shouldCover) {
 */
 export async function listProjects(req, res) {
   try {
+    // Leemos el JSON normalizado y lo devolvemos tal cual.
     const projects = await readProjects()
     res.json(projects)
   } catch (err) {
+    // Si falla el disco o el JSON, avisamos con 500.
     res.status(500).json({ error: 'Error al leer proyectos' })
   }
 }
@@ -52,6 +73,7 @@ export async function createProject(req, res) {
   }
 
   try {
+    // Tomamos el body que envia el admin (titulo, body, etc.).
     const payload = req.body ?? {}
     const { title, body, thumbnail, photos, id, ...extraFields } = payload
 
@@ -69,6 +91,7 @@ export async function createProject(req, res) {
       ...extraFields
     }
 
+    // Guardamos el nuevo proyecto al final de la lista.
     projects.push(newProject)
     await writeProjects(projects)
 
@@ -112,6 +135,7 @@ export async function updateProject(req, res) {
       photos: currentProject.photos
     }
 
+    // Reemplazamos el proyecto actualizado en su misma posicion.
     projects[index] = nextProject
     await writeProjects(projects)
 
@@ -160,6 +184,7 @@ export async function addProjectPhoto(req, res) {
       order: currentProject.photos.length
     }
 
+    // Reordenamos para mantener indices consecutivos.
     const nextPhotos = resequencePhotos([...currentProject.photos, nextPhoto])
 
     const nextProject = {
@@ -215,6 +240,7 @@ export async function updateProjectPhoto(req, res) {
     const parsedOrder = Number(order)
     const nextOrder = Number.isFinite(parsedOrder) ? parsedOrder : currentPhoto.order
 
+    // Aplicamos el patch a la foto indicada.
     const nextPhotos = currentProject.photos.map((photo) => {
       if (photo.id !== photoId) {
         return photo
@@ -313,10 +339,52 @@ export async function deleteProject(req, res) {
       return res.status(404).json({ error: 'Proyecto no encontrado' })
     }
 
+    // Persistimos la lista sin el proyecto eliminado.
     await writeProjects(filtered)
     res.status(204).send()
   } catch (err) {
     res.status(500).json({ error: 'Error al borrar proyecto' })
+  }
+}
+
+/*
+  GET /api/statistics
+
+  Devuelve las estadísticas actuales.
+*/
+export async function getStatistics(req, res) {
+  try {
+    // Leemos y devolvemos el JSON de estadisticas.
+    const data = fs.readFileSync(statisticsPath, 'utf-8')
+    const statistics = JSON.parse(data)
+    res.json(statistics)
+  } catch (err) {
+    res.status(500).json({ error: 'Error al leer las estadísticas' })
+  }
+}
+
+/*
+  PATCH /api/statistics
+
+  Permite al administrador actualizar las estadísticas.
+*/
+export async function updateStatistics(req, res) {
+  if (!assertAdminAuth(req, res)) {
+    return
+  }
+
+  try {
+    // Mezclamos los cambios con los valores actuales del JSON.
+    const updates = req.body
+    const data = fs.readFileSync(statisticsPath, 'utf-8')
+    const statistics = JSON.parse(data)
+
+    const updatedStatistics = { ...statistics, ...updates }
+    fs.writeFileSync(statisticsPath, JSON.stringify(updatedStatistics, null, 2))
+
+    res.json(updatedStatistics)
+  } catch (err) {
+    res.status(500).json({ error: 'Error al actualizar las estadísticas' })
   }
 }
 
@@ -327,5 +395,7 @@ export default {
   addProjectPhoto,
   updateProjectPhoto,
   deleteProjectPhoto,
-  deleteProject
+  deleteProject,
+  getStatistics,
+  updateStatistics
 }
