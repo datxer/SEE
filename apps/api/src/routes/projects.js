@@ -53,6 +53,8 @@ export async function listProjects(req, res) {
   try {
     // Leemos el JSON normalizado y lo devolvemos tal cual.
     const projects = await readProjects()
+    // Evita respuestas cacheadas (ETag / disco / proxy) cuando el admin actualiza contenido.
+    res.set('Cache-Control', 'no-store')
     res.json(projects)
   } catch (err) {
     // Si falla el disco o el JSON, avisamos con 500.
@@ -357,6 +359,7 @@ export async function getStatistics(req, res) {
     // Leemos y devolvemos el JSON de estadisticas.
     const data = fs.readFileSync(statisticsPath, 'utf-8')
     const statistics = JSON.parse(data)
+    res.set('Cache-Control', 'no-store')
     res.json(statistics)
   } catch (err) {
     res.status(500).json({ error: 'Error al leer las estadísticas' })

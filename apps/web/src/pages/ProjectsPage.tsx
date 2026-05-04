@@ -5,6 +5,7 @@ import CallToAction from '../components/CallToAction'
 import PageIntro from '../components/PageIntro'
 import ProjectGalleryModal from '../components/ProjectGalleryModal'
 import './ProjectsPage.css'
+import { subscribeToDataUpdates } from '../lib/dataRefresh'
 
 export default function ProjectsPage() {
   // Renderiza el portafolio y su modal de galeria.
@@ -29,19 +30,30 @@ export default function ProjectsPage() {
   // Los proyectos se cargan desde la API pública en /api/projects
   const [items, setItems] = useState<any[]>([])
   useEffect(() => {
-    // Cargamos proyectos desde la API publica.
     let mounted = true
-    fetch('/api/projects')
-      .then((r) => r.json())
-      .then((d) => {
-        if (mounted) setItems(d)
-      })
-      .catch(() => {
+
+    async function loadProjects() {
+      // Cargamos proyectos desde la API publica.
+      try {
+        const res = await fetch('/api/projects', { cache: 'no-store' })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const data = await res.json()
+        if (mounted) setItems(Array.isArray(data) ? data : [])
+      } catch {
         // Si falla la petición, dejamos un array vacío y mostramos mensaje en UI
         if (mounted) setItems([])
-      })
+      }
+    }
+
+    void loadProjects()
+
+    const unsubscribe = subscribeToDataUpdates(() => {
+      void loadProjects()
+    })
+
     return () => {
       mounted = false
+      unsubscribe()
     }
   }, [])
 

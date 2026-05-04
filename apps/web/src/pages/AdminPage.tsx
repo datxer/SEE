@@ -1,5 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { createPortal } from 'react-dom'
 import PageIntro from '../components/PageIntro'
+import { bumpDataVersion } from '../lib/dataRefresh'
+import './AdminPage.css'
 
 type Photo = {
   id: string
@@ -26,6 +29,13 @@ type PhotoDraft = {
 }
 
 type AuthState = 'checking' | 'signed-out' | 'signed-in'
+
+type AdminNotice = {
+  type: 'success' | 'danger'
+  message: string
+}
+
+const NOTICE_AUTO_HIDE_MS = 4000
 
 function createProjectDraft(project: Project) {
   return {
@@ -55,11 +65,20 @@ export default function AdminPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [drafts, setDrafts] = useState<Record<string, { title: string; body: string; thumbnail: string }>>({})
   const [photoDrafts, setPhotoDrafts] = useState<Record<string, Record<string, PhotoDraft>>>({})
+  const [newPhotoDrafts, setNewPhotoDrafts] = useState<Record<string, { url: string; alt: string; cover: boolean }>>({})
   const [loading, setLoading] = useState(false)
   const [newTitle, setNewTitle] = useState('')
   const [newBody, setNewBody] = useState('')
   const [authState, setAuthState] = useState<AuthState>(() => (token ? 'checking' : 'signed-out'))
   const [authError, setAuthError] = useState('')
+
+  const [notice, setNotice] = useState<AdminNotice | null>(null)
+
+  useEffect(() => {
+    if (!notice) return
+    const timeoutId = window.setTimeout(() => setNotice(null), NOTICE_AUTO_HIDE_MS)
+    return () => window.clearTimeout(timeoutId)
+  }, [notice])
 
   const [expandedProjectId, setExpandedProjectId] = useState<string | null>(null);
 
@@ -94,7 +113,7 @@ export default function AdminPage() {
     setStatisticsLoading(true)
 
     try {
-      const res = await fetch('/api/statistics')
+      const res = await fetch('/api/statistics', { cache: 'no-store' })
       const bodyText = await res.text()
       const data = bodyText ? JSON.parse(bodyText) : {}
 
@@ -107,19 +126,18 @@ export default function AdminPage() {
       applyStatisticsToDraft(data)
     } catch (err) {
       console.error('Error fetching statistics:', err)
-      setStatisticsError('No se pudieron cargar las estadísticas.')
+      setStatisticsError('Error al cargar las estadísticas.')
     } finally {
       setStatisticsLoading(false)
     }
   }
 
   function parseStatisticsDraft() {
-    // Normaliza strings → numbers. Si el campo está vacío, lo tomamos como 0.
-    // Si el valor no es un número, devolvemos null y mostramos un error.
-    const entries = Object.entries(statisticsDraft) as Array<[keyof typeof statisticsDraft, string]>
-    const parsed: Record<string, number> = {}
+    const keys = ['fv_instalados', 'revisiones_energeticas', 'estaciones_carga', 'ahorro_estimado_anual'] as const
+    const parsed = {} as Record<(typeof keys)[number], number>
 
-    for (const [key, value] of entries) {
+    for (const key of keys) {
+      const value = statisticsDraft[key]
       const trimmed = value.trim()
       const asNumber = trimmed === '' ? 0 : Number(trimmed)
 
@@ -135,6 +153,7 @@ export default function AdminPage() {
 
   async function updateStatistics() {
     setStatisticsError('')
+    setNotice(null)
 
     const parsed = parseStatisticsDraft()
     if (!parsed.ok) {
@@ -164,7 +183,8 @@ export default function AdminPage() {
       }
 
       applyStatisticsToDraft(data)
-      alert('Estadísticas actualizadas correctamente')
+      bumpDataVersion()
+      setNotice({ type: 'success', message: 'Estadísticas actualizadas correctamente.' })
     } catch (err) {
       console.error('Error updating statistics:', err)
       setStatisticsError('Error al actualizar las estadísticas.')
@@ -230,7 +250,7 @@ export default function AdminPage() {
   async function fetchProjects() {
     setLoading(true)
     try {
-      const res = await fetch('/api/projects')
+      const res = await fetch('/api/projects', { cache: 'no-store' })
       const data = await res.json()
       setProjects(data)
       // Creamos un borrador editable por proyecto para no escribir sobre el estado original.
@@ -308,8 +328,29 @@ export default function AdminPage() {
     })
   }
 
+  function updateNewPhotoDraft(projectId: string, patch: Partial<{ url: string; alt: string; cover: boolean }>) {
+    setNewPhotoDrafts((current) => {
+      const base = current[projectId] ?? { url: '', alt: '', cover: false }
+      return {
+        ...current,
+        [projectId]: {
+          ...base,
+          ...patch
+        }
+      }
+    })
+  }
+
+  function resetNewPhotoDraft(projectId: string) {
+    setNewPhotoDrafts((current) => ({
+      ...current,
+      [projectId]: { url: '', alt: '', cover: false }
+    }))
+  }
+
   async function createProject() {
     if (!newTitle.trim()) return
+    setNotice(null)
     const res = await fetch('/api/projects', {
       method: 'POST',
       headers: {
@@ -331,8 +372,10 @@ export default function AdminPage() {
       }))
       setNewTitle('')
       setNewBody('')
+      bumpDataVersion()
+      setNotice({ type: 'success', message: 'Proyecto creado correctamente.' })
     } else {
-      alert('Error: revisa la consola')
+      setNotice({ type: 'danger', message: 'No se pudo crear el proyecto.' })
     }
   }
 
@@ -356,6 +399,8 @@ export default function AdminPage() {
     const draft = drafts[projectId]
     if (!draft) return
 
+    setNotice(null)
+
     const res = await fetch(`/api/projects/${projectId}`, {
       method: 'PATCH',
       headers: {
@@ -370,7 +415,7 @@ export default function AdminPage() {
     })
 
     if (!res.ok) {
-      alert('No se pudo guardar el proyecto')
+      setNotice({ type: 'danger', message: 'No se pudo guardar el proyecto.' })
       return
     }
 
@@ -384,10 +429,14 @@ export default function AdminPage() {
       ...currentDrafts,
       [updatedProject.id]: createPhotoDraftMap(updatedProject)
     }))
+
+    bumpDataVersion()
+    setNotice({ type: 'success', message: 'Proyecto guardado correctamente.' })
   }
 
   async function addPhotoToProject(projectId: string, file: File) {
     try {
+      setNotice(null)
       const r = await uploadFile(file)
       const url = r.url
       // La foto se agrega por backend para que el JSON siempre quede consistente.
@@ -411,18 +460,64 @@ export default function AdminPage() {
           ...currentDrafts,
           [updatedProject.id]: createPhotoDraftMap(updatedProject)
         }))
+
+        bumpDataVersion()
+        setNotice({ type: 'success', message: 'Foto añadida correctamente.' })
       } else {
-        alert('No se pudo añadir la foto')
+        setNotice({ type: 'danger', message: 'No se pudo añadir la foto.' })
       }
     } catch (err) {
       console.error(err)
-      alert('Error subiendo archivo')
+      setNotice({ type: 'danger', message: 'Error subiendo archivo.' })
     }
+  }
+
+  async function addPhotoFromUrl(projectId: string) {
+    const draft = newPhotoDrafts[projectId] ?? { url: '', alt: '', cover: false }
+    const url = draft.url.trim()
+    if (!url) return
+
+    setNotice(null)
+
+    const res = await fetch(`/api/projects/${projectId}/photos`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-admin-token': token || ''
+      },
+      body: JSON.stringify({
+        url,
+        alt: draft.alt,
+        cover: draft.cover
+      })
+    })
+
+    if (!res.ok) {
+      setNotice({ type: 'danger', message: 'No se pudo añadir la foto desde URL.' })
+      return
+    }
+
+    const updatedProject = await res.json()
+    setProjects((currentProjects) => currentProjects.map((project) => (project.id === updatedProject.id ? updatedProject : project)))
+    setDrafts((currentDrafts) => ({
+      ...currentDrafts,
+      [updatedProject.id]: createProjectDraft(updatedProject)
+    }))
+    setPhotoDrafts((currentDrafts) => ({
+      ...currentDrafts,
+      [updatedProject.id]: createPhotoDraftMap(updatedProject)
+    }))
+
+    resetNewPhotoDraft(projectId)
+    bumpDataVersion()
+    setNotice({ type: 'success', message: 'Foto añadida correctamente.' })
   }
 
   async function savePhoto(projectId: string, photoId: string) {
     const draft = photoDrafts[projectId]?.[photoId]
     if (!draft) return
+
+    setNotice(null)
 
     const res = await fetch(`/api/projects/${projectId}/photos/${photoId}`, {
       method: 'PATCH',
@@ -439,7 +534,7 @@ export default function AdminPage() {
     })
 
     if (!res.ok) {
-      alert('No se pudo guardar la foto')
+      setNotice({ type: 'danger', message: 'No se pudo guardar la foto.' })
       return
     }
 
@@ -453,9 +548,13 @@ export default function AdminPage() {
       ...currentDrafts,
       [updatedProject.id]: createPhotoDraftMap(updatedProject)
     }))
+
+    bumpDataVersion()
+    setNotice({ type: 'success', message: 'Foto guardada correctamente.' })
   }
 
   async function deletePhoto(projectId: string, photoId: string) {
+    setNotice(null)
     const res = await fetch(`/api/projects/${projectId}/photos/${photoId}`, {
       method: 'DELETE',
       headers: {
@@ -464,7 +563,7 @@ export default function AdminPage() {
     })
 
     if (!res.ok) {
-      alert('No se pudo borrar la foto')
+      setNotice({ type: 'danger', message: 'No se pudo borrar la foto.' })
       return
     }
 
@@ -478,6 +577,9 @@ export default function AdminPage() {
       ...currentDrafts,
       [updatedProject.id]: createPhotoDraftMap(updatedProject)
     }))
+
+    bumpDataVersion()
+    setNotice({ type: 'success', message: 'Foto eliminada correctamente.' })
   }
 
   const toggleProjectPhotos = (projectId: string) => {
@@ -530,6 +632,28 @@ export default function AdminPage() {
         </section>
       ) : (
         <div className="vstack gap-4">
+          {notice && typeof document !== 'undefined'
+            ? createPortal(
+                <div className="position-fixed top-0 end-0 p-3 adminToastContainer" aria-live="polite" aria-atomic="true">
+                  <div
+                    className={`toast show ${notice.type === 'success' ? 'text-bg-success' : 'text-bg-danger'} border-0`}
+                    role="status"
+                  >
+                    <div className="d-flex">
+                      <div className="toast-body">{notice.message}</div>
+                      <button
+                        type="button"
+                        className="btn-close btn-close-white me-2 m-auto"
+                        aria-label="Cerrar"
+                        onClick={() => setNotice(null)}
+                      />
+                    </div>
+                  </div>
+                </div>,
+                document.body,
+              )
+            : null}
+
           <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div>
               <button className="btn btn-danger me-2" onClick={logout}>Cerrar sesión</button>
@@ -577,6 +701,81 @@ export default function AdminPage() {
                           <p className="text-body-secondary small mb-3">
                             <strong>Descripción:</strong> {project.body}
                           </p>
+
+                          <div className="border rounded-3 p-3 bg-body-tertiary">
+                            <h4 className="h6 mb-3">Añadir foto</h4>
+
+                            <div className="vstack gap-3">
+                              <div>
+                                <label className="form-label">Subir desde tu PC</label>
+                                <input
+                                  type="file"
+                                  className="form-control"
+                                  accept="image/*"
+                                  onChange={(e) => {
+                                    const file = e.currentTarget.files?.[0]
+                                    if (file) {
+                                      void addPhotoToProject(project.id, file)
+                                    }
+                                    // Permite volver a seleccionar el mismo archivo.
+                                    e.currentTarget.value = ''
+                                  }}
+                                />
+                                <div className="form-text">Se sube al servidor y queda disponible como /uploads/...</div>
+                              </div>
+
+                              <div>
+                                <label className="form-label">URL de internet (o /uploads/...)</label>
+                                <input
+                                  className="form-control"
+                                  placeholder="https://..."
+                                  value={(newPhotoDrafts[project.id]?.url ?? '')}
+                                  onChange={(e) => updateNewPhotoDraft(project.id, { url: e.target.value })}
+                                />
+                              </div>
+
+                              <div>
+                                <label className="form-label">Texto alternativo</label>
+                                <input
+                                  className="form-control"
+                                  value={(newPhotoDrafts[project.id]?.alt ?? '')}
+                                  onChange={(e) => updateNewPhotoDraft(project.id, { alt: e.target.value })}
+                                />
+                              </div>
+
+                              <div className="form-check">
+                                <input
+                                  className="form-check-input"
+                                  type="checkbox"
+                                  id={`new-cover-${project.id}`}
+                                  checked={Boolean(newPhotoDrafts[project.id]?.cover)}
+                                  onChange={(e) => updateNewPhotoDraft(project.id, { cover: e.target.checked })}
+                                />
+                                <label className="form-check-label" htmlFor={`new-cover-${project.id}`}>
+                                  Usar como portada
+                                </label>
+                              </div>
+
+                              <div className="d-flex gap-2 flex-wrap">
+                                <button
+                                  type="button"
+                                  className="btn btn-success btn-sm"
+                                  onClick={() => void addPhotoFromUrl(project.id)}
+                                  disabled={!(newPhotoDrafts[project.id]?.url ?? '').trim()}
+                                >
+                                  Añadir desde URL
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn btn-outline-secondary btn-sm"
+                                  onClick={() => resetNewPhotoDraft(project.id)}
+                                >
+                                  Limpiar
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+
                           {project.photos
                             .slice()
                             .sort((leftPhoto, rightPhoto) => leftPhoto.order - rightPhoto.order)
@@ -594,9 +793,9 @@ export default function AdminPage() {
                                 <div key={photo.id} className="border rounded-3 p-3">
                                 <div className="d-flex gap-3 align-items-start flex-wrap flex-md-nowrap">
                                   <img
+                                    className="adminPhotoPreview"
                                     src={draft.url}
                                     alt={draft.alt || project.title}
-                                    style={{ width: 120, height: 90, objectFit: 'cover', flexShrink: 0 }}
                                   />
 
                                   <div className="flex-grow-1 vstack gap-2">

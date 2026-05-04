@@ -12,9 +12,11 @@ import { assertAdminAuth } from '../middleware/auth.js'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-// Los archivos subidos terminan dentro del frontend público.
+// Los archivos subidos terminan dentro del frontend público REAL.
 // Así Vite puede servirlos directamente como /uploads/archivo.jpg.
-const uploadsDir = path.join(__dirname, '../../web/public/uploads')
+// Nota: este archivo vive en apps/api/src/routes, por eso subimos 3 niveles hasta /apps
+// y luego entramos a apps/web/public/uploads.
+const uploadsDir = path.join(__dirname, '../../../web/public/uploads')
 
 /*
   Configuración de multer.

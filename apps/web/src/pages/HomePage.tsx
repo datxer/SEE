@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import './HomePage.css'
+import { subscribeToDataUpdates } from '../lib/dataRefresh'
 
 // Slide del hero (imagen y texto alternativo).
 type HeroSlide = {
@@ -225,13 +226,13 @@ export default function HomePage() {
   }, [availableSlides.length])
 
   useEffect(() => {
-    // Carga una sola vez las estadisticas desde la API.
+    // Carga las estadisticas desde la API y se vuelve a ejecutar cuando el admin guarda.
     let cancelled = false
 
     async function fetchStatistics() {
       // Fetch simple; si falla, mantenemos el fallback.
       try {
-        const res = await fetch('/api/statistics')
+        const res = await fetch('/api/statistics', { cache: 'no-store' })
         if (!res.ok) return
         const data = (await res.json()) as Partial<Statistics>
 
@@ -255,8 +256,13 @@ export default function HomePage() {
 
     void fetchStatistics()
 
+    const unsubscribe = subscribeToDataUpdates(() => {
+      void fetchStatistics()
+    })
+
     return () => {
       cancelled = true
+      unsubscribe()
     }
   }, [])
 
