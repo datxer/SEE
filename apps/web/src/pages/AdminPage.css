@@ -1,0 +1,10 @@
+.adminToastContainer {
+  z-index: 1080;
+}
+
+.adminPhotoPreview {
+  width: 120px;
+  height: 90px;
+  object-fit: cover;
+  flex-shrink: 0;
+}

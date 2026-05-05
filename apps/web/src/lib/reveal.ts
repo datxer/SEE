@@ -12,9 +12,11 @@
   - En Layout, llamamos a setupRevealOnScroll() en cada cambio de ruta.
 */
 
+// Firma de la funcion de limpieza (se usa en useEffect).
 export type RevealCleanup = () => void
 
 export function setupRevealOnScroll(): RevealCleanup {
+  // Esta funcion inicializa el observer y devuelve un cleanup para desconectarlo.
   // Si el navegador no soporta IntersectionObserver, mostramos todo sin animación.
   if (typeof window === 'undefined' || !('IntersectionObserver' in window)) {
     document.querySelectorAll<HTMLElement>('[data-reveal]').forEach((el) => {

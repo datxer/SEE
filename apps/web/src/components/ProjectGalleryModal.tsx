@@ -1,3 +1,4 @@
+// Hooks para manejar estado y efectos del modal.
 import { useEffect, useState } from 'react'
 import './ProjectGalleryModal.css'
 
@@ -29,6 +30,7 @@ export default function ProjectGalleryModal({ projectTitle, photos, onClose }: P
 
   // Efecto: si presionas las flechas del teclado, navega las fotos
   useEffect(() => {
+    // Registramos un listener de teclado mientras el modal esta abierto.
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight') goToNextPhoto()
       if (e.key === 'ArrowLeft') goToPreviousPhoto()
@@ -37,11 +39,13 @@ export default function ProjectGalleryModal({ projectTitle, photos, onClose }: P
     }
 
     window.addEventListener('keydown', handleKeyDown)
+    // Cleanup: quitamos el listener al cerrar el modal.
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [photos.length])
 
   // Si haces clic fuera de la imagen (en el fondo oscuro), se cierra
   const handleBackdropClick = (e: React.MouseEvent) => {
+    // Solo cerramos si el click ocurre en el fondo, no en la imagen.
     if (e.target === e.currentTarget) {
       onClose()
     }

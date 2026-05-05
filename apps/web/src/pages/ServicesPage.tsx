@@ -1,8 +1,10 @@
+// Link de router y componentes reutilizables.
 import { Link } from 'react-router-dom'
 import CallToAction from '../components/CallToAction'
 import PageIntro from '../components/PageIntro'
 
 export default function ServicesPage() {
+  // Renderiza el catalogo de servicios.
   /*
     Página: /servicios
 
@@ -22,6 +24,7 @@ export default function ServicesPage() {
     La idea es mantener descripciones cortas y claras (tipo catálogo).
   */
   const services = [
+    // Cada item describe un servicio y sus etiquetas.
     {
       title: 'Sistemas fotovoltaicos (FV)',
       body: 'Diseño, suministro, montaje y puesta en marcha (conectados a red, aislados o híbridos).',

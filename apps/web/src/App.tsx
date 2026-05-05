@@ -1,4 +1,6 @@
+// Router de la app y helpers para navegar.
 import { Navigate, Route, Routes } from 'react-router-dom'
+// Layout compartido (header/footer) y paginas principales.
 import Layout from './components/Layout'
 import HomePage from './pages/HomePage'
 import AboutPage from './pages/AboutPage'

@@ -1,9 +1,11 @@
+// Shape de la respuesta del health check.
 export type HealthResponse = {
   // Estructura de la respuesta del endpoint GET /api/health.
   // Mantener esto tipado evita errores (TypeScript valida el shape esperado).
   status: string
 }
 
+// Helper reutilizable para consultar si el backend esta activo.
 export async function fetchHealth(): Promise<HealthResponse> {
   /*
     Llamada simple a la API.

@@ -7,13 +7,32 @@
 /* Tarjeta de proyecto clickeable */
 .projectCard {
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.projectCard::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(120deg, color-mix(in srgb, var(--brand) 18%, transparent), transparent 45%),
+    linear-gradient(-120deg, color-mix(in srgb, var(--accent) 22%, transparent), transparent 45%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
 }
 
 /* Efecto hover al pasar el mouse sobre la tarjeta */
 .projectCard:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15) !important;
+  border-color: color-mix(in srgb, var(--brand) 32%, var(--border)) !important;
+}
+
+.projectCard:hover::before {
+  opacity: 1;
 }
 
 /* Efecto al enfocar con teclado (accesibilidad) */

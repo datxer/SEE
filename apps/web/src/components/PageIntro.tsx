@@ -1,10 +1,13 @@
+// Estilos locales del encabezado de pagina.
 import './PageIntro.css'
 
+// Metrica mostrada en tarjetas (valor + etiqueta).
 type PageIntroMetric = {
   value: string
   label: string
 }
 
+// Props del componente PageIntro.
 type PageIntroProps = {
   ariaLabel: string
   badges: string[]
@@ -14,11 +17,12 @@ type PageIntroProps = {
 }
 
 export default function PageIntro({ ariaLabel, badges, title, description, metrics = [] }: PageIntroProps) {
+  // Desestructuramos props para simplificar el JSX.
   // Este componente junta la parte que se repite arriba en varias páginas.
   // Así cambias el contenido una sola vez por página, pero no repites el mismo HTML.
   // Piensa en él como una “caja” que ya trae la forma lista.
   return (
-    <header className="p-4 p-lg-5 rounded-4 border bg-body-tertiary shadow-sm" aria-label={ariaLabel} data-reveal>
+    <header className="pageIntro p-4 p-lg-5 rounded-4 border bg-body-tertiary shadow-sm" aria-label={ariaLabel} data-reveal>
       {/* Las badges son pequeñas etiquetas que resumen de qué trata la página */}
       <div className="d-inline-flex gap-2 flex-wrap" aria-label="Etiquetas">
         {badges.map((badge) => (

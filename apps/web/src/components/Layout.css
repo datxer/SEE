@@ -11,7 +11,16 @@
   background: var(--header-bg);
   border-bottom: 1px solid var(--border);
   backdrop-filter: blur(14px);
-  box-shadow: 0 14px 28px rgba(17, 24, 39, 0.08);
+  box-shadow: 0 14px 28px rgba(17, 24, 39, 0.08), 0 0 30px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.siteHeader::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, color-mix(in srgb, var(--accent) 64%, transparent) 50%, transparent 100%);
+  opacity: 0.6;
 }
 
 /*
@@ -54,6 +63,7 @@
 .navPill:hover {
   transform: translateY(-2px);
   background: color-mix(in srgb, var(--brand-soft) 44%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 /*
@@ -143,6 +153,10 @@
   background: var(--surface);
   object-fit: cover;
   box-shadow: var(--shadow-sm);
+}
+
+.brandLogo {
+  box-shadow: var(--shadow-sm), 0 0 0 2px color-mix(in srgb, var(--brand) 18%, transparent);
 }
 
 .brandName {

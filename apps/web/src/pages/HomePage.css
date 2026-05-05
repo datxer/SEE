@@ -9,9 +9,9 @@
   isolation: isolate;
   padding: 10px;
   background:
-    radial-gradient(900px 420px at 78% 12%, color-mix(in srgb, var(--brand) 22%, transparent), transparent 66%),
-    radial-gradient(680px 320px at 10% 90%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 72%),
-    linear-gradient(180deg, var(--surface-solid) 0%, color-mix(in srgb, var(--surface) 72%, transparent) 120%);
+    radial-gradient(900px 420px at 78% 12%, color-mix(in srgb, var(--brand) 18%, transparent), transparent 66%),
+    radial-gradient(680px 320px at 10% 90%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 72%),
+    linear-gradient(180deg, var(--surface-solid) 0%, color-mix(in srgb, var(--surface) 78%, transparent) 120%);
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
   overflow: clip;
@@ -23,9 +23,24 @@
   inset: 0;
   z-index: -1;
   background:
-    linear-gradient(140deg, color-mix(in srgb, var(--brand) 20%, transparent), transparent 34%),
-    linear-gradient(-120deg, color-mix(in srgb, var(--accent) 15%, transparent), transparent 42%);
+    linear-gradient(140deg, color-mix(in srgb, var(--brand) 18%, transparent), transparent 34%),
+    linear-gradient(-120deg, color-mix(in srgb, var(--accent) 16%, transparent), transparent 42%);
   opacity: 0.6;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent) 10%, transparent) 0,
+    color-mix(in srgb, var(--accent) 10%, transparent) 1px,
+    transparent 1px,
+    transparent 6px
+  );
+  opacity: 0.12;
 }
 
 .heroInner {
@@ -68,6 +83,38 @@
   place-items: center;
   position: relative;
   overflow: hidden;
+}
+
+.heroMedia::before {
+  content: '';
+  position: absolute;
+  inset: -20% 0 auto 0;
+  height: 60%;
+  background:
+    radial-gradient(420px 260px at 20% 40%, color-mix(in srgb, var(--brand) 26%, transparent), transparent 65%),
+    radial-gradient(520px 320px at 70% 30%, color-mix(in srgb, var(--accent) 24%, transparent), transparent 70%);
+  opacity: 0.85;
+  animation: heroGlow 14s var(--ease-out) infinite alternate;
+  pointer-events: none;
+}
+
+.heroMedia::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.35) 0.6px, transparent 0.6px);
+  background-size: 6px 6px;
+  opacity: 0.24;
+  pointer-events: none;
+}
+
+@keyframes heroGlow {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(2%, -4%, 0) scale(1.06);
+  }
 }
 
 .heroMedia img {
@@ -197,6 +244,13 @@
   font-size: clamp(2rem, 4vw, 3rem);
 }
 
+.heroTitle .text-success {
+  background: linear-gradient(120deg, var(--brand) 0%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 .heroSubtitle {
   max-width: 60ch;
   font-size: clamp(1rem, 1.5vw, 1.08rem);
@@ -277,10 +331,23 @@
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
   background:
-    radial-gradient(900px 260px at 50% 0%, color-mix(in srgb, var(--brand) 18%, transparent), transparent 62%),
-    radial-gradient(900px 260px at 90% 70%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 66%),
+    radial-gradient(900px 260px at 50% 0%, color-mix(in srgb, var(--brand) 16%, transparent), transparent 62%),
+    radial-gradient(900px 260px at 90% 70%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 66%),
     linear-gradient(180deg, var(--surface-solid) 0%, var(--bg) 130%);
   box-shadow: var(--shadow-md), var(--shadow-glow);
+}
+
+.cta::before {
+  content: '';
+  position: absolute;
+  inset: -40% 0 auto 0;
+  height: 90%;
+  background:
+    radial-gradient(520px 240px at 20% 40%, color-mix(in srgb, var(--brand) 22%, transparent), transparent 70%),
+    radial-gradient(520px 240px at 80% 10%, color-mix(in srgb, var(--accent) 26%, transparent), transparent 70%);
+  opacity: 0.75;
+  animation: ctaGlow 16s var(--ease-out) infinite alternate;
+  pointer-events: none;
 }
 
 .cta::after {
@@ -295,7 +362,16 @@
     transparent 1px,
     transparent 48px
   );
-  opacity: 0.35;
+  opacity: 0.32;
+}
+
+@keyframes ctaGlow {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(-2%, 6%, 0) scale(1.05);
+  }
 }
 
 @media (max-width: 991.98px) {
