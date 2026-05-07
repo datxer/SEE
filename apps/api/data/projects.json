@@ -1,0 +1,23 @@
+[
+  {
+    "id": "b775c332-598a-495d-8f34-e2c9f13d12cc",
+    "title": "Tabacuba",
+    "body": "Proyecto de prueba para verificar la creación de secciones y la carga de fotos en la galería.",
+    "thumbnail": null,
+    "photos": []
+  },
+  {
+    "id": "7dd6b412-9c89-4687-a530-4883f51b7a81",
+    "title": "3XE",
+    "body": "la mas especial",
+    "thumbnail": "/uploads/1777910051632-1640.png",
+    "photos": [
+      {
+        "id": "d3f67f3e-5ad7-47cc-a299-23a13fad0eb8",
+        "url": "/uploads/1777910051632-1640.png",
+        "alt": "Balcony-ja.png",
+        "order": 0
+      }
+    ]
+  }
+]

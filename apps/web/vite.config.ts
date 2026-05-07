@@ -9,9 +9,9 @@ export default defineConfig({
     proxy: {
       /*
         Proxy en desarrollo:
-        - Cuando el frontend hace fetch('/api/...'), Vite lo redirige al backend Rocket.
+        - Cuando el frontend hace fetch('/api/...'), Vite lo redirige al backend Express.
         - Esto evita problemas de CORS en el navegador durante DEV.
-        - Backend por defecto (Rocket debug): http://localhost:8000
+        - Backend por defecto: http://localhost:8000
       */
       '/api': {
         target: 'http://localhost:8000',
