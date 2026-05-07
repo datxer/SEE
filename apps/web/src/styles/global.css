@@ -399,3 +399,17 @@ textarea:focus {
 code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
+/* Solo agrega esto al final de tu global.css */
+body, p, .text-body-secondary, .muted {
+  font-weight: 500 !important;
+  -webkit-font-smoothing: antialiased;
+}
+
+p, .text-body-secondary {
+  color: #2c442c !important; /* Verde oscuro legible */
+}
+
+:root[data-theme="dark"] p,
+:root[data-theme="dark"] .text-body-secondary {
+  color: #c8e0c8 !important; /* Verde claro legible en modo oscuro */
+}
