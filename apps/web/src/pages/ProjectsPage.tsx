@@ -113,24 +113,26 @@ export default function ProjectsPage() {
                   alt={it.thumbnailAlt || (it.photos && it.photos[0] ? (typeof it.photos[0] === 'string' ? '' : it.photos[0].alt || '') : it.title)}
                   loading="lazy"
                 />
-                <div className="card-body">
+                <div className="card-body d-flex flex-column h-100">
                   <h3 className="h6">{it.title}</h3>
                   <p className="text-body-secondary">{it.body}</p>
                   {/* Pequeño indicador para que el usuario sepa que es clickeable */}
-                  <div className="d-flex flex-wrap gap-2 align-items-center" aria-label="Etiquetas y acciones">
-                    <span className="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle">
+                  <div className="mt-auto">
+                   <div className="d-flex flex-wrap gap-2 align-items-center" aria-label="Etiquetas y acciones">
+                     <span className="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle">
                       Solar
-                    </span>
-                    <span className="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle">
+                     </span>
+                     <span className="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle">
                       Eficiencia
-                    </span>
-                    <span className="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle">
+                     </span>
+                     <span className="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle">
                       Calidad
-                    </span>
+                     </span>
                     {/* Pequeño indicador visual de que hay fotos (ej: "📷 3 fotos") */}
-                    <small className="text-muted ms-auto">
+                     <small className="text-muted ms-auto">
                       📷 {Array.isArray(it.photos) ? it.photos.length : 0}
-                    </small>
+                     </small>
+                    </div>
                   </div>
                 </div>
               </article>
