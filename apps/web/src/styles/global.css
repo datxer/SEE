@@ -398,6 +398,56 @@ textarea:focus {
   box-shadow: 0 14px 30px color-mix(in srgb, var(--accent) 38%, transparent);
 }
 
+/*
+  Modo de bajo impacto visual
+  - Reduce gradientes, blur y animaciones para cargar mas rapido y ahorrar GPU.
+  - Se activa con preferencias del sistema del usuario.
+*/
+@media (prefers-reduced-motion: reduce), (prefers-reduced-data: reduce) {
+  body {
+    background: var(--bg);
+  }
+
+  body::before,
+  body::after,
+  .hero::before,
+  .hero::after,
+  .heroMedia::before,
+  .heroMedia::after,
+  .cta::before,
+  .cta::after,
+  .pageIntro::before,
+  .pageIntro::after,
+  .siteHeader::after,
+  .projectCard::before {
+    display: none;
+  }
+
+  .reveal,
+  .heroSlide,
+  .heroInner.isSwapping .heroMedia,
+  .heroInner.isSwapping .heroContent,
+  .modal-content {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .siteHeader,
+  .main .card,
+  .contactBox,
+  .modal-content,
+  .galleryNavButton,
+  .heroNavBtn {
+    backdrop-filter: none;
+  }
+
+  .hero,
+  .cta,
+  .pageIntro {
+    background: var(--surface-solid);
+  }
+}
+
 .btn-success:hover {
   background: linear-gradient(135deg, var(--accent) 0%, var(--brand) 100%);
   box-shadow: 0 18px 36px color-mix(in srgb, var(--accent) 48%, transparent);
