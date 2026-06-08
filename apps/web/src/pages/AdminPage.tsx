@@ -36,12 +36,40 @@ type AdminNotice = {
 }
 
 const NOTICE_AUTO_HIDE_MS = 4000
+const TOKEN_TTL_MS = 30 * 60 * 1000
+const TOKEN_KEY = 'admin_token'
+const TOKEN_EXPIRES_KEY = 'admin_token_expires'
+const MAX_TITLE_LENGTH = 160
+const MAX_BODY_LENGTH = 5000
+const MAX_ALT_LENGTH = 200
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024
+const ALLOWED_UPLOAD_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+const ALLOWED_UPLOAD_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.gif']
 
 function createProjectDraft(project: Project) {
   return {
     title: project.title,
     body: project.body,
     thumbnail: project.thumbnail || ''
+  }
+}
+
+function sanitizeText(value: string, maxLength: number) {
+  // Normaliza texto para que el frontend no envie strings enormes o vacias.
+  return value.trim().slice(0, maxLength)
+}
+
+function isSafeUrl(value: string) {
+  // Permitimos URLs relativas (/uploads/...) o absolutas http/https.
+  const trimmed = value.trim()
+  if (!trimmed) return false
+  if (trimmed.startsWith('/')) return true
+
+  try {
+    const parsed = new URL(trimmed)
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:'
+  } catch {
+    return false
   }
 }
 
@@ -60,7 +88,16 @@ function createPhotoDraftMap(project: Project) {
 }
 
 export default function AdminPage() {
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem('admin_token'))
+  const [token, setToken] = useState<string | null>(() => {
+    // Cargamos el token solo desde sessionStorage (sesion actual).
+    const sessionToken = sessionStorage.getItem(TOKEN_KEY)
+    const sessionExpires = Number(sessionStorage.getItem(TOKEN_EXPIRES_KEY) || 0)
+    if (sessionToken && sessionExpires > Date.now()) {
+      return sessionToken
+    }
+
+    return null
+  })
   const [password, setPassword] = useState('')
   const [projects, setProjects] = useState<Project[]>([])
   const [drafts, setDrafts] = useState<Record<string, { title: string; body: string; thumbnail: string }>>({})
@@ -79,6 +116,24 @@ export default function AdminPage() {
     const timeoutId = window.setTimeout(() => setNotice(null), NOTICE_AUTO_HIDE_MS)
     return () => window.clearTimeout(timeoutId)
   }, [notice])
+
+  useEffect(() => {
+    // Limpiamos tokens expirados automaticamente cada 30 segundos.
+    const intervalId = window.setInterval(() => {
+      const now = Date.now()
+      const sessionExpires = Number(sessionStorage.getItem(TOKEN_EXPIRES_KEY) || 0)
+
+      if (sessionExpires && sessionExpires <= now) {
+        sessionStorage.removeItem(TOKEN_KEY)
+        sessionStorage.removeItem(TOKEN_EXPIRES_KEY)
+        setToken(null)
+        setAuthState('signed-out')
+        setNotice({ type: 'danger', message: 'La sesión expiró. Inicia sesión de nuevo.' })
+      }
+    }, 30000)
+
+    return () => window.clearInterval(intervalId)
+  }, [])
 
   const [expandedProjectId, setExpandedProjectId] = useState<string | null>(null);
 
@@ -214,9 +269,10 @@ export default function AdminPage() {
 
         if (!res.ok) {
           if (!cancelled) {
-            localStorage.removeItem('admin_token')
+            sessionStorage.removeItem(TOKEN_KEY)
+            sessionStorage.removeItem(TOKEN_EXPIRES_KEY)
             setToken(null)
-            setAuthError('La contraseña no es válida.')
+            setAuthError('La sesión no es válida o expiró.')
             setAuthState('signed-out')
             setProjects([])
             setDrafts({})
@@ -275,28 +331,45 @@ export default function AdminPage() {
     event.preventDefault()
     setAuthError('')
 
-    const res = await fetch('/api/admin/verify', {
+    const res = await fetch('/api/admin/login', {
+      method: 'POST',
       headers: {
-        'x-admin-token': password
-      }
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ password })
     })
 
+    const bodyText = await res.text()
+    const data = bodyText ? JSON.parse(bodyText) : {}
+
     if (!res.ok) {
-      setAuthError('Contraseña incorrecta. El acceso fue rechazado.')
+      setAuthError(data?.error || 'Contraseña incorrecta. El acceso fue rechazado.')
       setPassword('')
       setAuthState('signed-out')
       return
     }
 
-    // Solo guardamos la clave cuando el backend la valida.
-    localStorage.setItem('admin_token', password)
-    setToken(password)
+    const nextToken = typeof data?.token === 'string' ? data.token : ''
+    const expiresInSeconds = Number(data?.expiresInSeconds || 0)
+    const expiresAt = Date.now() + (expiresInSeconds ? expiresInSeconds * 1000 : TOKEN_TTL_MS)
+
+    if (!nextToken) {
+      setAuthError('No se recibió un token válido desde el servidor.')
+      setAuthState('signed-out')
+      return
+    }
+
+    // Guardamos el JWT solo en sessionStorage con expiracion.
+    sessionStorage.setItem(TOKEN_KEY, nextToken)
+    sessionStorage.setItem(TOKEN_EXPIRES_KEY, String(expiresAt))
+    setToken(nextToken)
     setPassword('')
     setAuthState('signed-in')
   }
 
   function logout() {
-    localStorage.removeItem('admin_token')
+    sessionStorage.removeItem(TOKEN_KEY)
+    sessionStorage.removeItem(TOKEN_EXPIRES_KEY)
     setToken(null)
     setProjects([])
     setDrafts({})
@@ -349,7 +422,14 @@ export default function AdminPage() {
   }
 
   async function createProject() {
-    if (!newTitle.trim()) return
+    const title = sanitizeText(newTitle, MAX_TITLE_LENGTH)
+    const body = sanitizeText(newBody, MAX_BODY_LENGTH)
+
+    if (!title || !body) {
+      setNotice({ type: 'danger', message: 'Completa título y descripción antes de crear.' })
+      return
+    }
+
     setNotice(null)
     const res = await fetch('/api/projects', {
       method: 'POST',
@@ -357,7 +437,7 @@ export default function AdminPage() {
         'Content-Type': 'application/json',
         'x-admin-token': token || ''
       },
-      body: JSON.stringify({ title: newTitle, body: newBody })
+      body: JSON.stringify({ title, body })
     })
     if (res.ok) {
       const p = await res.json()
@@ -380,6 +460,16 @@ export default function AdminPage() {
   }
 
   async function uploadFile(file: File) {
+    const extension = file.name.slice(file.name.lastIndexOf('.')).toLowerCase()
+
+    if (!ALLOWED_UPLOAD_TYPES.includes(file.type) || !ALLOWED_UPLOAD_EXTENSIONS.includes(extension)) {
+      throw new Error('Formato de imagen no permitido')
+    }
+
+    if (file.size > MAX_UPLOAD_BYTES) {
+      throw new Error('El archivo supera el limite de 10 MB')
+    }
+
     const t = token || ''
     const formData = new FormData()
     formData.append('file', file)
@@ -399,6 +489,14 @@ export default function AdminPage() {
     const draft = drafts[projectId]
     if (!draft) return
 
+    const title = sanitizeText(draft.title, MAX_TITLE_LENGTH)
+    const body = sanitizeText(draft.body, MAX_BODY_LENGTH)
+
+    if (!title || !body) {
+      setNotice({ type: 'danger', message: 'El título y la descripción son obligatorios.' })
+      return
+    }
+
     setNotice(null)
 
     const res = await fetch(`/api/projects/${projectId}`, {
@@ -408,8 +506,8 @@ export default function AdminPage() {
         'x-admin-token': token || ''
       },
       body: JSON.stringify({
-        title: draft.title,
-        body: draft.body,
+        title,
+        body,
         thumbnail: draft.thumbnail || null
       })
     })
@@ -468,14 +566,21 @@ export default function AdminPage() {
       }
     } catch (err) {
       console.error(err)
-      setNotice({ type: 'danger', message: 'Error subiendo archivo.' })
+      const message = err instanceof Error ? err.message : 'Error subiendo archivo.'
+      setNotice({ type: 'danger', message })
     }
   }
 
   async function addPhotoFromUrl(projectId: string) {
     const draft = newPhotoDrafts[projectId] ?? { url: '', alt: '', cover: false }
     const url = draft.url.trim()
+
     if (!url) return
+
+    if (!isSafeUrl(url)) {
+      setNotice({ type: 'danger', message: 'La URL no es valida. Usa http/https o /uploads/...' })
+      return
+    }
 
     setNotice(null)
 
@@ -487,7 +592,7 @@ export default function AdminPage() {
       },
       body: JSON.stringify({
         url,
-        alt: draft.alt,
+        alt: sanitizeText(draft.alt, MAX_ALT_LENGTH),
         cover: draft.cover
       })
     })
@@ -517,6 +622,11 @@ export default function AdminPage() {
     const draft = photoDrafts[projectId]?.[photoId]
     if (!draft) return
 
+    if (!isSafeUrl(draft.url)) {
+      setNotice({ type: 'danger', message: 'La URL de la foto no es valida.' })
+      return
+    }
+
     setNotice(null)
 
     const res = await fetch(`/api/projects/${projectId}/photos/${photoId}`, {
@@ -526,8 +636,8 @@ export default function AdminPage() {
         'x-admin-token': token || ''
       },
       body: JSON.stringify({
-        url: draft.url,
-        alt: draft.alt,
+        url: draft.url.trim(),
+        alt: sanitizeText(draft.alt, MAX_ALT_LENGTH),
         order: Number(draft.order),
         cover: draft.cover
       })
@@ -623,6 +733,7 @@ export default function AdminPage() {
                   type="password"
                   className="form-control"
                   value={password}
+                  autoComplete="current-password"
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
@@ -673,8 +784,20 @@ export default function AdminPage() {
                 Cada proyecto nuevo se convierte en una sección visible de la galería pública.
               </p>
               <div className="mb-2">
-                <input className="form-control mb-2" placeholder="Título" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} />
-                <textarea className="form-control" placeholder="Descripción" value={newBody} onChange={(e) => setNewBody(e.target.value)} />
+                <input
+                  className="form-control mb-2"
+                  placeholder="Título"
+                  maxLength={MAX_TITLE_LENGTH}
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                />
+                <textarea
+                  className="form-control"
+                  placeholder="Descripción"
+                  maxLength={MAX_BODY_LENGTH}
+                  value={newBody}
+                  onChange={(e) => setNewBody(e.target.value)}
+                />
               </div>
               <button className="btn btn-success" onClick={createProject}>Crear</button>
             </div>
@@ -729,6 +852,7 @@ export default function AdminPage() {
                                 <input
                                   className="form-control"
                                   placeholder="https://..."
+                                  maxLength={2000}
                                   value={(newPhotoDrafts[project.id]?.url ?? '')}
                                   onChange={(e) => updateNewPhotoDraft(project.id, { url: e.target.value })}
                                 />
@@ -738,6 +862,7 @@ export default function AdminPage() {
                                 <label className="form-label">Texto alternativo</label>
                                 <input
                                   className="form-control"
+                                  maxLength={MAX_ALT_LENGTH}
                                   value={(newPhotoDrafts[project.id]?.alt ?? '')}
                                   onChange={(e) => updateNewPhotoDraft(project.id, { alt: e.target.value })}
                                 />
@@ -804,6 +929,7 @@ export default function AdminPage() {
                                       <input
                                         className="form-control"
                                         value={draft.url}
+                                        maxLength={2000}
                                         onChange={(e) => updatePhotoDraft(project.id, photo.id, { url: e.target.value })}
                                       />
                                     </div>
@@ -813,6 +939,7 @@ export default function AdminPage() {
                                       <input
                                         className="form-control"
                                         value={draft.alt}
+                                        maxLength={MAX_ALT_LENGTH}
                                         onChange={(e) => updatePhotoDraft(project.id, photo.id, { alt: e.target.value })}
                                       />
                                     </div>

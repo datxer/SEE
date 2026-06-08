@@ -9,6 +9,7 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
+import { z } from 'zod'
 
 // Resolvemos la ruta real del modulo para ubicar el JSON.
 const __filename = fileURLToPath(import.meta.url)
@@ -18,6 +19,102 @@ const __dirname = dirname(__filename)
 // Ojo: este módulo está en apps/api/src/routes, así que hay que subir 2 niveles.
 // Ruta absoluta al archivo de estadisticas.
 const statisticsPath = path.join(__dirname, '../../data/statistics.json')
+
+// Claves peligrosas que se deben descartar para evitar prototype pollution.
+const UNSAFE_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
+
+// Esquemas Zod para validar payloads entrantes.
+const booleanishSchema = z
+  .union([z.boolean(), z.literal('true'), z.literal('false'), z.literal(1), z.literal(0)])
+  .transform((value) => value === true || value === 'true' || value === 1)
+
+const projectCreateSchema = z
+  .object({
+    title: z.string().min(1).max(160),
+    body: z.string().min(1).max(5000),
+    thumbnail: z.string().max(2000).nullable().optional()
+  })
+  .passthrough()
+
+const projectPatchSchema = z
+  .object({
+    title: z.string().min(1).max(160).optional(),
+    body: z.string().min(1).max(5000).optional(),
+    thumbnail: z.string().max(2000).nullable().optional()
+  })
+  .passthrough()
+
+const addPhotoSchema = z.object({
+  url: z.string().min(1).max(2000),
+  alt: z.string().max(200).optional(),
+  cover: booleanishSchema.optional()
+})
+
+const updatePhotoSchema = z.object({
+  url: z.string().min(1).max(2000).optional(),
+  alt: z.string().max(200).optional(),
+  order: z.coerce.number().int().nonnegative().optional(),
+  cover: booleanishSchema.optional()
+})
+
+const statisticsPatchSchema = z.object({
+  fv_instalados: z.coerce.number().finite().optional(),
+  revisiones_energeticas: z.coerce.number().finite().optional(),
+  estaciones_carga: z.coerce.number().finite().optional(),
+  ahorro_estimado_anual: z.coerce.number().finite().optional()
+})
+
+function sanitizeObject(input) {
+  // Solo aceptamos objetos planos para evitar mutaciones inesperadas.
+  if (!input || typeof input !== 'object' || Array.isArray(input)) {
+    return {}
+  }
+
+  const safe = {}
+
+  for (const [key, value] of Object.entries(input)) {
+    if (UNSAFE_KEYS.has(key)) {
+      continue
+    }
+
+    safe[key] = value
+  }
+
+  return safe
+}
+
+function sanitizeText(value, maxLength) {
+  // Recorta strings para evitar payloads enormes en el JSON.
+  if (typeof value !== 'string') {
+    return ''
+  }
+
+  return value.trim().slice(0, maxLength)
+}
+
+function isSafeUrl(value) {
+  // Permitimos URLs relativas (/uploads/...) o absolutas http/https.
+  if (typeof value !== 'string') {
+    return false
+  }
+
+  const trimmed = value.trim()
+
+  if (!trimmed) {
+    return false
+  }
+
+  if (trimmed.startsWith('/')) {
+    return true
+  }
+
+  try {
+    const parsed = new URL(trimmed)
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:'
+  } catch {
+    return false
+  }
+}
 
 function resequencePhotos(photos) {
   // Ordena las fotos por su order y reasigna un indice limpio.
@@ -76,21 +173,35 @@ export async function createProject(req, res) {
 
   try {
     // Tomamos el body que envia el admin (titulo, body, etc.).
-    const payload = req.body ?? {}
+    const payload = sanitizeObject(req.body ?? {})
     const { title, body, thumbnail, photos, id, ...extraFields } = payload
+    const safeTitle = sanitizeText(title, 160)
+    const safeBody = sanitizeText(body, 5000)
+    const safeThumbnail = typeof thumbnail === 'string' && thumbnail.trim() ? thumbnail.trim() : null
 
-    if (!title || !body) {
+    if (!safeTitle || !safeBody) {
       return res.status(400).json({ error: 'Título y descripción requeridos' })
+    }
+
+    const validation = projectCreateSchema.safeParse({
+      title: safeTitle,
+      body: safeBody,
+      thumbnail: safeThumbnail,
+      ...extraFields
+    })
+
+    if (!validation.success) {
+      return res.status(400).json({ error: 'Datos inválidos en el proyecto' })
     }
 
     const projects = await readProjects()
     const newProject = {
       id: uuidv4(),
-      title,
-      body,
-      thumbnail: typeof thumbnail === 'string' && thumbnail.trim() ? thumbnail : null,
+      title: validation.data.title,
+      body: validation.data.body,
+      thumbnail: validation.data.thumbnail ?? null,
       photos: Array.isArray(photos) ? photos : [],
-      ...extraFields
+      ...validation.data
     }
 
     // Guardamos el nuevo proyecto al final de la lista.
@@ -117,10 +228,34 @@ export async function updateProject(req, res) {
 
   try {
     const { id } = req.params
-    const payload = req.body ?? {}
+    const payload = sanitizeObject(req.body ?? {})
 
     // No dejamos que el cliente cambie el id ni sobrescriba las fotos aquí.
     const { id: ignoredId, photos: ignoredPhotos, ...patch } = payload
+
+    if (Object.prototype.hasOwnProperty.call(patch, 'title')) {
+      patch.title = sanitizeText(patch.title, 160)
+    }
+
+    if (Object.prototype.hasOwnProperty.call(patch, 'body')) {
+      patch.body = sanitizeText(patch.body, 5000)
+    }
+
+    if (Object.prototype.hasOwnProperty.call(patch, 'thumbnail')) {
+      patch.thumbnail = typeof patch.thumbnail === 'string' && patch.thumbnail.trim()
+        ? patch.thumbnail.trim()
+        : null
+    }
+
+    if (!Object.keys(patch).length) {
+      return res.status(400).json({ error: 'No hay cambios válidos para aplicar' })
+    }
+
+    const patchValidation = projectPatchSchema.safeParse(patch)
+
+    if (!patchValidation.success) {
+      return res.status(400).json({ error: 'Datos inválidos al actualizar el proyecto' })
+    }
 
     const projects = await readProjects()
     const index = projects.findIndex((project) => project.id === id)
@@ -132,7 +267,7 @@ export async function updateProject(req, res) {
     const currentProject = projects[index]
     const nextProject = {
       ...currentProject,
-      ...patch,
+      ...patchValidation.data,
       id: currentProject.id,
       photos: currentProject.photos
     }
@@ -164,11 +299,24 @@ export async function addProjectPhoto(req, res) {
 
   try {
     const { id } = req.params
-    const payload = req.body ?? {}
-    const { url, alt = '', cover = false } = payload
+    const payload = sanitizeObject(req.body ?? {})
+    const validation = addPhotoSchema.safeParse(payload)
 
-    if (!url) {
+    if (!validation.success) {
+      return res.status(400).json({ error: 'Datos inválidos al agregar foto' })
+    }
+
+    const { url, alt = '', cover } = validation.data
+    const coverFlag = cover === true
+    const safeUrl = typeof url === 'string' ? url.trim() : ''
+    const safeAlt = sanitizeText(alt, 200)
+
+    if (!safeUrl) {
       return res.status(400).json({ error: 'La URL de la foto es obligatoria' })
+    }
+
+    if (!isSafeUrl(safeUrl)) {
+      return res.status(400).json({ error: 'La URL de la foto no es válida' })
     }
 
     const projects = await readProjects()
@@ -181,8 +329,8 @@ export async function addProjectPhoto(req, res) {
     const currentProject = projects[index]
     const nextPhoto = {
       id: uuidv4(),
-      url,
-      alt,
+      url: safeUrl,
+      alt: safeAlt,
       order: currentProject.photos.length
     }
 
@@ -194,7 +342,7 @@ export async function addProjectPhoto(req, res) {
       photos: nextPhotos,
       // Si el admin marca la foto como portada, la guardamos como thumbnail.
       // Si no había miniatura, usamos la primera foto subida como portada.
-      thumbnail: cover || !currentProject.thumbnail ? url : currentProject.thumbnail
+      thumbnail: coverFlag || !currentProject.thumbnail ? safeUrl : currentProject.thumbnail
     }
 
     projects[index] = nextProject
@@ -219,8 +367,15 @@ export async function updateProjectPhoto(req, res) {
 
   try {
     const { id, photoId } = req.params
-    const payload = req.body ?? {}
-    const { url, alt, order, cover = false } = payload
+    const payload = sanitizeObject(req.body ?? {})
+    const validation = updatePhotoSchema.safeParse(payload)
+
+    if (!validation.success) {
+      return res.status(400).json({ error: 'Datos inválidos al actualizar la foto' })
+    }
+
+    const { url, alt, order, cover } = validation.data
+    const coverFlag = cover === true
 
     const projects = await readProjects()
     const projectIndex = projects.findIndex((project) => project.id === id)
@@ -237,10 +392,10 @@ export async function updateProjectPhoto(req, res) {
     }
 
     const currentPhoto = currentProject.photos[photoIndex]
-    const nextUrl = typeof url === 'string' && url.trim() ? url.trim() : currentPhoto.url
-    const nextAlt = typeof alt === 'string' ? alt : currentPhoto.alt ?? ''
-    const parsedOrder = Number(order)
-    const nextOrder = Number.isFinite(parsedOrder) ? parsedOrder : currentPhoto.order
+    const nextUrlCandidate = typeof url === 'string' && url.trim() ? url.trim() : currentPhoto.url
+    const nextUrl = isSafeUrl(nextUrlCandidate) ? nextUrlCandidate : currentPhoto.url
+    const nextAlt = typeof alt === 'string' ? sanitizeText(alt, 200) : currentPhoto.alt ?? ''
+    const nextOrder = Number.isFinite(order) ? order : currentPhoto.order
 
     // Aplicamos el patch a la foto indicada.
     const nextPhotos = currentProject.photos.map((photo) => {
@@ -260,7 +415,7 @@ export async function updateProjectPhoto(req, res) {
     const nextProject = {
       ...currentProject,
       photos: normalizedPhotos,
-      thumbnail: getNextThumbnail(currentProject, currentPhoto.url, nextUrl, cover)
+      thumbnail: getNextThumbnail(currentProject, currentPhoto.url, nextUrl, coverFlag)
     }
 
     projects[projectIndex] = nextProject
@@ -378,11 +533,22 @@ export async function updateStatistics(req, res) {
 
   try {
     // Mezclamos los cambios con los valores actuales del JSON.
-    const updates = req.body
+    const updates = sanitizeObject(req.body ?? {})
+    const validation = statisticsPatchSchema.safeParse(updates)
+
+    if (!validation.success) {
+      return res.status(400).json({ error: 'Datos inválidos en las estadísticas' })
+    }
+
+    const safeUpdates = validation.data
+
+    if (!Object.keys(safeUpdates).length) {
+      return res.status(400).json({ error: 'No hay cambios válidos para aplicar' })
+    }
     const data = fs.readFileSync(statisticsPath, 'utf-8')
     const statistics = JSON.parse(data)
 
-    const updatedStatistics = { ...statistics, ...updates }
+    const updatedStatistics = { ...statistics, ...safeUpdates }
     fs.writeFileSync(statisticsPath, JSON.stringify(updatedStatistics, null, 2))
 
     res.json(updatedStatistics)

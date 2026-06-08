@@ -8,9 +8,11 @@ API simple para gestionar proyectos, fotos y datos de la galería.
 # Instalar dependencias (desde la raíz del proyecto)
 npm install
 
-# Configurar token de administrador
+# Configurar autenticación del admin y CORS
 cp apps/api/.env.example apps/api/.env
-# Edita apps/api/.env y pon una contraseña segura en ADMIN_TOKEN
+# Edita apps/api/.env y pon un hash bcrypt en ADMIN_PASSWORD_HASH
+# También define ADMIN_JWT_SECRET (cadena larga aleatoria)
+# Si vas a usar un dominio real, agrega CORS_ORIGIN con tu URL
 ```
 
 ## Desarrollo
@@ -29,8 +31,9 @@ npm run dev
 
 - **GET /api/projects** - Listar todos los proyectos
 - **GET /api/health** - Health check
+- **POST /api/admin/login** - Login admin (retorna JWT)
 
-### Protegidos (requieren header `x-admin-token`)
+### Protegidos (requieren header `x-admin-token` con JWT)
 
 - **POST /api/projects** - Crear proyecto
   ```json
@@ -55,7 +58,7 @@ npm run dev
 
 El panel `/admin` maneja todo automáticamente:
 
-1. Login con contraseña (la que pusiste en ADMIN_TOKEN)
+1. Login con contraseña (se valida contra ADMIN_PASSWORD_HASH)
 2. Crear/editar/borrar proyectos
 3. Subir fotos (drag & drop)
 
@@ -74,3 +77,5 @@ El panel `/admin` maneja todo automáticamente:
 - Los proyectos se guardan en `apps/api/data/projects.json`
 - Máximo 10 MB por archivo
 - Solo se permiten: JPEG, PNG, WebP, GIF
+- CORS por defecto permite `http://localhost:5173` y `http://127.0.0.1:5173`
+- Si usas proxy (Nginx/Cloudflare), activa `TRUST_PROXY=1`

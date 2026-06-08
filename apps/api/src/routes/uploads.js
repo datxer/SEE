@@ -43,11 +43,17 @@ const storage = multer.diskStorage({
   }
 })
 
-// Solo aceptamos imágenes comunes.
+// Lista blanca de tipos permitidos para evitar archivos peligrosos.
+const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+const allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif']
+
+// Solo aceptamos imágenes comunes y extensiones coherentes.
 const fileFilter = (req, file, cb) => {
-  // Lista blanca de tipos permitidos para evitar archivos peligrosos.
-  const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-  if (allowedMimes.includes(file.mimetype)) {
+  const mimeOk = allowedMimes.includes(file.mimetype)
+  const extension = path.extname(file.originalname).toLowerCase()
+  const extensionOk = allowedExtensions.includes(extension)
+
+  if (mimeOk && extensionOk) {
     cb(null, true)
   } else {
     cb(new Error('Solo se permiten imágenes (JPEG, PNG, WebP, GIF)'))
@@ -59,7 +65,8 @@ const upload = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 10 * 1024 * 1024
+    fileSize: 10 * 1024 * 1024,
+    files: 1
   }
 })
 
